@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <title>آسمانی که ما را به هم رساند</title>
-  <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
-  <script type="text/javascript" src="https://d3js.org/d3.geo.projection.v0.min.js"></script>
-  <script type="text/javascript" src="https://aladin.u-strasbg.fr/AladinLite/api/v2/latest/aladin.min.js"></script>
-  <script type="text/javascript" src="https://ofrohn.github.io/celestial-demo/lib/celestial.min.js"></script>
-  <link rel="stylesheet" href="https://ofrohn.github.io/celestial-demo/lib/celestial.css">
+  
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3-geo-projection/0.2.16/d3.geo.projection.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/ofrohn/d3-celestial/lib/celestial.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ofrohn/d3-celestial/lib/celestial.css">
 
   <style>
     body {
-      background: #0d1b2a; /* رنگ پس‌زمینه سرمه‌ای تیره */
+      background: #0d1b2a;
       color: #e0e1dd;
       font-family: 'Tahoma', sans-serif;
       text-align: center;
       margin: 0;
-      overflow: hidden; /* حذف اسکرول */
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -28,19 +28,22 @@
       width: 600px;
       height: 600px;
       margin: 20px auto;
-      border-radius: 50%; /* دایره‌ای کردن نقشه */
-      box-shadow: 0 0 50px rgba(255, 255, 255, 0.1); /* درخشش دور دایره */
+      border-radius: 50%;
+      box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
+      cursor: grab;
     }
 
     .message-box {
       z-index: 10;
       margin-top: -50px;
+      pointer-events: none; /* کلیک‌ها از روی متن رد بشن */
     }
 
     h1 {
       font-weight: lighter;
       letter-spacing: 2px;
       margin-bottom: 5px;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     }
 
     p {
@@ -60,35 +63,34 @@
 
   <script type="text/javascript">
     
-    // --- تنظیمات شخصی‌سازی (اینجا رو تغییر بده) ---
     var config = {
-      location: [35.6892, 51.3890], // مختصات (عرض و طول جغرافیایی) - الان روی تهرانه
-      date: new Date("2023-02-14T20:00:00"), // تاریخ و ساعت (میلادی وارد کن)
-      interactive: true, // آیا بتونه نقشه رو با موس بچرخونه؟
-      controls: false,   // دکمه‌های زوم و کنترل رو مخفی کردیم که قشنگ‌تر شه
-      projection: "airy", // نوع نمایش کروی
-      datapath: "https://ofrohn.github.io/celestial-demo/data/", // مسیر دیتای ستارگان
+      location: [35.6892, 51.3890], // مختصات تهران
+      date: new Date("2023-02-14T20:00:00"), // تاریخ مورد نظر
+      interactive: true,
+      controls: false, 
+      projection: "airy", 
+      // *** تغییر مهم: استفاده از لینک CDN برای دیتا ***
+      datapath: "https://cdn.jsdelivr.net/gh/ofrohn/d3-celestial/data/", 
       stars: {
-        colors: true,  // رنگ واقعی ستارگان
-        names: true,   // اسم ستارگان رو نشون بده
+        colors: true, 
+        names: true, 
         style: { fill: "#ffffff", opacity: 1 }, 
-        limit: 6,      // تا چه قدر ستاره‌ها رو نشون بده (عدد کمتر = ستاره‌های بیشتر)
+        limit: 6, 
       },
-      dsos: { show: false }, // اجرام عمق آسمان (کهکشان‌ها و...) رو نشون نده (شلوغ میشه)
+      dsos: { show: false }, 
       constellations: {
-        show: true,    // صورت‌های فلکی رو نشون بده
-        names: true,   // اسم صورت‌های فلکی
+        show: true, 
+        names: true, 
         deselect: true,
         lineStyle: { stroke: "#cccccc", width: 1, opacity: 0.4 }, 
       },
       mw: {
-        show: true,    // راه شیری رو نشون بده
-        style: { fill: "#ffffff", opacity: 0.1 }
+        show: true, 
+        style: { fill: "#ffffff", opacity: 0.12 }
       },
       background: { fill: "#0d1b2a", stroke: "#0d1b2a", opacity: 1 }, 
     };
 
-    // اجرای نقشه
     Celestial.display(config);
     
   </script>
