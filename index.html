@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>آسمانی که ما را به هم رساند</title>
+  <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+  <script type="text/javascript" src="https://d3js.org/d3.geo.projection.v0.min.js"></script>
+  <script type="text/javascript" src="https://aladin.u-strasbg.fr/AladinLite/api/v2/latest/aladin.min.js"></script>
+  <script type="text/javascript" src="https://ofrohn.github.io/celestial-demo/lib/celestial.min.js"></script>
+  <link rel="stylesheet" href="https://ofrohn.github.io/celestial-demo/lib/celestial.css">
+
+  <style>
+    body {
+      background: #0d1b2a; /* رنگ پس‌زمینه سرمه‌ای تیره */
+      color: #e0e1dd;
+      font-family: 'Tahoma', sans-serif;
+      text-align: center;
+      margin: 0;
+      overflow: hidden; /* حذف اسکرول */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    #celestial-map {
+      width: 600px;
+      height: 600px;
+      margin: 20px auto;
+      border-radius: 50%; /* دایره‌ای کردن نقشه */
+      box-shadow: 0 0 50px rgba(255, 255, 255, 0.1); /* درخشش دور دایره */
+    }
+
+    .message-box {
+      z-index: 10;
+      margin-top: -50px;
+    }
+
+    h1 {
+      font-weight: lighter;
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+    }
+
+    p {
+      color: #778da9;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="celestial-map"></div>
+
+  <div class="message-box">
+    <h1>ستاره‌های شبِ آشنایی ما</h1>
+    <p id="date-display">14 فوریه 2023 - تهران</p>
+  </div>
+
+  <script type="text/javascript">
+    
+    // --- تنظیمات شخصی‌سازی (اینجا رو تغییر بده) ---
+    var config = {
+      location: [35.6892, 51.3890], // مختصات (عرض و طول جغرافیایی) - الان روی تهرانه
+      date: new Date("2023-02-14T20:00:00"), // تاریخ و ساعت (میلادی وارد کن)
+      interactive: true, // آیا بتونه نقشه رو با موس بچرخونه؟
+      controls: false,   // دکمه‌های زوم و کنترل رو مخفی کردیم که قشنگ‌تر شه
+      projection: "airy", // نوع نمایش کروی
+      datapath: "https://ofrohn.github.io/celestial-demo/data/", // مسیر دیتای ستارگان
+      stars: {
+        colors: true,  // رنگ واقعی ستارگان
+        names: true,   // اسم ستارگان رو نشون بده
+        style: { fill: "#ffffff", opacity: 1 }, 
+        limit: 6,      // تا چه قدر ستاره‌ها رو نشون بده (عدد کمتر = ستاره‌های بیشتر)
+      },
+      dsos: { show: false }, // اجرام عمق آسمان (کهکشان‌ها و...) رو نشون نده (شلوغ میشه)
+      constellations: {
+        show: true,    // صورت‌های فلکی رو نشون بده
+        names: true,   // اسم صورت‌های فلکی
+        deselect: true,
+        lineStyle: { stroke: "#cccccc", width: 1, opacity: 0.4 }, 
+      },
+      mw: {
+        show: true,    // راه شیری رو نشون بده
+        style: { fill: "#ffffff", opacity: 0.1 }
+      },
+      background: { fill: "#0d1b2a", stroke: "#0d1b2a", opacity: 1 }, 
+    };
+
+    // اجرای نقشه
+    Celestial.display(config);
+    
+  </script>
+
+</body>
+</html>
