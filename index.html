@@ -3,81 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ستاره‌های شب آشنایی ما</title>
+    <title>آسمان شب ما</title>
     <style>
+        /* تنظیمات کلی صفحه */
         body {
             margin: 0;
             padding: 0;
-            background-color: #000000;
+            background-color: #0d1b2a;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            color: white;
             font-family: 'Tahoma', sans-serif;
+            overflow: hidden;
+            color: white;
         }
-        
-        .container {
-            text-align: center;
+
+        /* قاب اصلی دایره‌ای */
+        .sky-container {
             position: relative;
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(100, 200, 255, 0.2); /* هاله نور دور قاب */
+            overflow: hidden; /* هرچی بیرون دایره باشه حذف میشه */
+            border: 4px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* عکس آسمان که آپلود کردی */
+        .sky-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* کمی زوم میکنه که گوشه‌ها خالی نمونه */
+            transform: scale(1.1); 
+        }
+
+        /* --- افکت‌های ویژه با کد (CSS Magic) --- */
+        
+        /* لایه درخشش روی عکس */
+        .overlay-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(13, 27, 42, 0.6) 100%);
             z-index: 2;
         }
 
+        /* انیمیشن متن */
+        .text-content {
+            margin-top: 30px;
+            text-align: center;
+            z-index: 10;
+        }
+        
         h1 {
             font-weight: 300;
-            margin-bottom: 10px;
-            text-shadow: 0 0 10px rgba(255,255,255,0.7);
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            animation: fadeIn 2s ease-in;
         }
 
         p {
-            color: #ccc;
-            margin-bottom: 30px;
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            animation: fadeIn 3s ease-in;
         }
 
-        /* استایل قاب نقشه */
-        .map-frame {
-            width: 350px;
-            height: 350px;
-            border-radius: 50%; /* گرد کردن نقشه */
-            border: 2px solid rgba(255,255,255,0.2);
-            box-shadow: 0 0 60px rgba(255, 255, 255, 0.15); /* درخشش دورش */
-            overflow: hidden;
-            margin: 0 auto;
-            background: #000;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            /* کمی زوم میکنیم که دکمه‌های اضافی معلوم نشه */
-            transform: scale(1.05); 
-        }
-
-        .footer-note {
-            margin-top: 30px;
-            font-size: 12px;
+        /* دکمه بازگشت به دنیای واقعی */
+        .programmer-note {
+            position: absolute;
+            bottom: 20px;
+            font-size: 10px;
             color: #555;
+            font-family: monospace;
         }
+
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>آسمان شبی که تو آمدی</h1>
+    <div class="sky-container">
+        <img src="stars.jpg" alt="Star Map" class="sky-image">
+        
+        <div class="overlay-glow"></div>
+    </div>
+
+    <div class="text-content">
+        <h1>در این شب، داستان ما شروع شد</h1>
         <p>14 فوریه 2023 - تهران</p>
+    </div>
 
-        <div class="map-frame">
-            <iframe 
-                src="https://virtualsky.lco.global/embed/index.html?longitude=51.3890&latitude=35.6892&date=2023-02-14T20:00:00&projection=stereo&constellations=true&constellationlabels=true&showstarlabels=true&live=false&az=0" 
-                allowtransparency="true">
-            </iframe>
-        </div>
-
-        <div class="footer-note">
-            با عشق کدنویسی شده برای تو ❤️
-        </div>
+    <div class="programmer-note">
+        &lt;code&gt; Status: In Love &lt;/code&gt;
     </div>
 
 </body>
