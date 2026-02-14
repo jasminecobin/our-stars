@@ -14,7 +14,7 @@
             font-family: 'Montserrat', sans-serif;
             color: white;
             user-select: none;
-            cursor: crosshair; /* نشانگر موس */
+            cursor: crosshair; 
         }
 
         canvas {
@@ -25,7 +25,7 @@
             z-index: 1;
         }
 
-        /* لایه رابط کاربری */
+        
         #ui-layer {
             position: absolute;
             top: 50%;
@@ -34,10 +34,10 @@
             text-align: center;
             z-index: 10;
             width: 100%;
-            pointer-events: none; /* کلیک از روی متن رد بشه */
+            pointer-events: none; 
         }
 
-        /* اسم‌ها */
+        
         h1 {
             font-family: 'Cinzel', serif;
             font-weight: 700;
@@ -59,7 +59,6 @@
             animation: fadeIn 3s forwards 2s;
         }
 
-        /* تایمر عشق */
         #timer-container {
             font-family: 'Montserrat', sans-serif;
             font-size: 1.1rem;
@@ -77,9 +76,9 @@
             text-shadow: 0 0 10px #00aaff;
         }
 
-        /* دکمه اصلی */
+        
         #valentine-btn {
-            pointer-events: auto; /* دکمه قابل کلیک باشه */
+            pointer-events: auto; 
             font-family: 'Lalezar', cursive;
             font-size: 1.4rem;
             padding: 12px 40px;
@@ -103,7 +102,7 @@
             box-shadow: 0 0 30px #ff3366;
         }
 
-        /* استایل پیام‌های کلیکی (Hidden Notes) */
+        
         .click-msg {
             position: absolute;
             color: #fff;
@@ -116,23 +115,31 @@
             white-space: nowrap;
         }
 
-        /* استایل عکس‌های شناور (Floating Memories) */
+        
         .memory-photo {
             position: absolute;
             width: 120px;
-            height: 160px; /* نسبت عکس عمودی */
+            height: 160px; 
             background-size: cover;
             background-position: center;
             border: 3px solid white;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(255,255,255,0.5);
-            bottom: -200px; /* شروع از پایین صفحه */
+            bottom: -200px; 
             z-index: 5;
             animation: floatUpScreen 15s linear forwards;
             transform: rotate(0deg);
         }
 
-        /* انیمیشن‌ها */
+         class ShootingStar {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = 0;
+                this.len = 0;
+                this.speed = Math.random() * 5 + 10;
+                this.active = true;
+        
+
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
         
         @keyframes floatUpFade {
@@ -147,7 +154,6 @@
             100% { bottom: 120%; transform: rotate(10deg); opacity: 0; }
         }
 
-        /* صفحه شروع */
         #overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 200;
@@ -195,20 +201,31 @@
     </audio>
 
     <script>
-        // --- تنظیمات شخصی ---
+
+          if (Math.random() * 1000 < 5) { 
+                shootingStars.push(new ShootingStar());
+            }
+            
+            shootingStars.forEach((ss, index) => {
+                ss.update();
+                if (!ss.active) shootingStars.splice(index, 1);
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+
         const CONFIG = {
             partnerName: "NEGAR",
-            startDate: new Date("2024-01-22T00:00:00"), // تاریخ شروع رابطه‌تون
+            startDate: new Date("2024-01-22T00:00:00"), 
             starCount: 1200,
+            shootingStarFreq: 400
             
-            // جملاتی که وقتی روی صفحه کلیک میکنه ظاهر میشن
             loveNotes: [
                 "عاشقتم", "توی قلبمی", "مورچه زشت", "خیلی دوستت دارم میمون", "قناری", 
                 "مرسی که هستی", "میمون افریقایی", "❤️", "زندگیم", "ملخ زشت"
             ],
 
-            // آدرس عکس‌های دوتایی‌تون (لطفا اینجا لینک عکس یا مسیر فایل محلی بذار)
-            // اگر عکس نداری، اینا به صورت رنگی نمایش داده میشن
             photos: [
                 "photo1.jpg", 
                 "photo2.jpg",
@@ -217,16 +234,16 @@
             ]
         };
 
-        // --- متغیرهای سراسری ---
+        
         const canvas = document.getElementById('skyCanvas');
         const ctx = canvas.getContext('2d');
         let width, height;
         let stars = [];
         let fireworks = [];
         let particles = [];
-        let heartMode = false; // حالت تشکیل قلب
+        let heartMode = false; 
 
-        // --- تایمر عشق (Feature 1) ---
+       
         function updateTimer() {
             const now = new Date();
             const diff = now - CONFIG.startDate;
@@ -241,21 +258,19 @@
         }
         setInterval(updateTimer, 1000);
 
-        // --- کلاس ستاره (با قابلیت تبدیل به قلب) ---
+        
         class Star {
             constructor() {
-                // موقعیت اولیه (پراکنده)
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
                 
-                // موقعیت هدف (برای قلب)
+            
                 this.tx = this.x;
                 this.ty = this.y;
                 
                 this.size = Math.random() * 1.5;
                 this.baseColor = "255, 255, 255";
                 
-                // رنگ‌بندی
                 const hue = Math.random();
                 if(hue > 0.9) this.baseColor = "200, 220, 255";
                 else if(hue > 0.6) this.baseColor = "255, 200, 200";
@@ -266,17 +281,14 @@
 
             update() {
                 if (heartMode) {
-                    // حرکت نرم به سمت موقعیت هدف (قلب)
                     this.x += (this.tx - this.x) * 0.05;
                     this.y += (this.ty - this.y) * 0.05;
-                    this.baseColor = "255, 50, 100"; // قرمز شدن ستاره‌ها
+                    this.baseColor = "255, 50, 100"; 
                 } else {
-                    // حرکت عادی آسمان
                     this.x -= 0.1;
                     if(this.x < 0) this.x = width;
                 }
 
-                // چشمک زدن
                 this.alpha += this.blinkSpeed;
                 if(this.alpha > 1 || this.alpha < 0.2) this.blinkSpeed *= -1;
 
@@ -291,32 +303,24 @@
             }
         }
 
-        // --- محاسبه مختصات قلب (ریاضیات عشق) ---
-        function calculateHeartTargets() {
+         function calculateHeartTargets() {
             const cx = width / 2;
             const cy = height / 2;
-            const scale = Math.min(width, height) / 35; // سایز قلب
+            const scale = Math.min(width, height) / 35; 
 
             stars.forEach((star, i) => {
-                // فقط 70% ستاره‌ها قلب بشن، بقیه پس‌زمینه بمونن
                 if (i % 4 !== 0) {
-                    // فرمول ریاضی قلب
-                    // x = 16sin^3(t)
-                    // y = 13cos(t) - 5cos(2t) - 2cos(3t) - cos(4t)
                     const t = Math.random() * Math.PI * 2;
                     
-                    // تغییر مختصات: Y در کانواس برعکس است (منفی میکنیم)
                     star.tx = cx + 16 * Math.pow(Math.sin(t), 3) * scale;
                     star.ty = cy - (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) * scale;
                     
-                    // کمی لرزش رندوم برای اینکه قلب خیلی مصنوعی صاف نباشه
                     star.tx += (Math.random() - 0.5) * 10;
                     star.ty += (Math.random() - 0.5) * 10;
                 }
             });
         }
 
-        // --- کلاس آتش‌بازی ---
         class Firework {
             constructor() {
                 this.x = Math.random() * width * 0.8 + width * 0.1;
@@ -355,7 +359,7 @@
                 this.gravity = 0.05;
             }
             update() {
-                this.vx *= 0.98; this.vy *= 0.98; // اصطکاک
+                this.vx *= 0.98; this.vy *= 0.98; 
                 this.vy += this.gravity;
                 this.x += this.vx; this.y += this.vy;
                 this.alpha -= 0.01;
@@ -370,7 +374,6 @@
             }
         }
 
-        // --- ساخت عکس‌های شناور (Feature 4) ---
         function launchMemories() {
             const container = document.body;
             
@@ -378,29 +381,22 @@
                 setTimeout(() => {
                     const img = document.createElement('div');
                     img.className = 'memory-photo';
-                    // اگر عکس واقعی دارید خط زیر را فعال کنید:
-                    // img.style.backgroundImage = `url(${photoUrl})`;
+                    img.style.backgroundImage = `url(${photoUrl})`;
                     
-                    // فعلا رنگ رندوم برای تست (تا وقتی عکس بذارید)
                     img.style.backgroundColor = `hsl(${Math.random()*360}, 60%, 80%)`;
                     
-                    // موقعیت افقی رندوم
                     img.style.left = (Math.random() * (width - 150)) + 'px';
                     
-                    // متن روی عکس (اختیاری)
                     img.innerHTML = `<div style="text-align:center; padding-top:60px; color:#333; font-weight:bold;">Memory ${index+1}</div>`;
 
                     container.appendChild(img);
                     
-                    // حذف بعد از انیمیشن
                     setTimeout(() => img.remove(), 16000);
-                }, index * 2500); // هر 2.5 ثانیه یک عکس
+                }, index * 2500);
             });
         }
 
-        // --- پیام‌های کلیکی (Feature 2) ---
         document.addEventListener('click', (e) => {
-            // اگر روی دکمه‌ها کلیک شد، پیام نشون نده
             if(e.target.tagName === 'BUTTON') return;
 
             const msg = document.createElement('div');
@@ -408,7 +404,6 @@
             msg.style.left = e.clientX + 'px';
             msg.style.top = e.clientY + 'px';
             
-            // انتخاب متن رندوم
             const text = CONFIG.loveNotes[Math.floor(Math.random() * CONFIG.loveNotes.length)];
             msg.innerText = text;
             
@@ -418,7 +413,6 @@
         });
 
 
-        // --- حلقه اصلی انیمیشن ---
         function init() {
             resize();
             for(let i=0; i<CONFIG.starCount; i++) stars.push(new Star());
@@ -426,7 +420,6 @@
         }
 
         function animate() {
-            // ردپای محو برای زیبایی
             ctx.fillStyle = "rgba(0, 5, 16, 0.2)";
             ctx.fillRect(0, 0, width, height);
 
@@ -453,9 +446,7 @@
         }
         window.addEventListener('resize', resize);
 
-        // --- کنترل دکمه‌ها ---
         
-        // 1. دکمه شروع (Play Music)
         document.getElementById('start-btn').addEventListener('click', () => {
             document.getElementById('bg-music').play().catch(e => console.log("Music failed"));
             document.getElementById('overlay').style.opacity = 0;
@@ -465,19 +456,15 @@
             }, 1500);
         });
 
-        // 2. دکمه ولنتاین (اجرای همه افکت‌ها)
         const vBtn = document.getElementById('valentine-btn');
         vBtn.addEventListener('click', () => {
-            // الف: تغییر متن دکمه
             vBtn.innerText = "❤️ دوستت دارم ❤️";
             vBtn.style.background = "#fff";
             vBtn.style.color = "#ff3366";
 
-            // ب: فعال کردن حالت قلب (Feature 3)
             calculateHeartTargets();
             heartMode = true;
 
-            // ج: شروع آتیش‌بازی (با کمی تاخیر)
             let fwCount = 0;
             const fwInterval = setInterval(() => {
                 fireworks.push(new Firework());
@@ -485,11 +472,9 @@
                 if(fwCount > 15) clearInterval(fwInterval);
             }, 500);
 
-            // د: شناور شدن عکس‌ها (Feature 4)
             setTimeout(launchMemories, 1000);
         });
 
     </script>
 </body>
 </html>
-
