@@ -1,119 +1,316 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>آسمان شب ما - مشهد</title>
+    <title>آسمان شبِ تو</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #000;
-            color: white;
-            font-family: 'Tahoma', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .container {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            height: 600px;
-            border-radius: 15px;
-            overflow: hidden; /* مهم برای اینکه شهاب سنگ از کادر بیرون نزنه */
-            box-shadow: 0 0 50px rgba(0, 100, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* فریم نقشه آسمان */
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .title-box {
-            margin-bottom: 20px;
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        canvas { display: block; }
+        
+        #ui-layer {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
             text-align: center;
+            color: white;
+            pointer-events: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            mix-blend-mode: overlay; /* ترکیب هنری متن با ستاره‌ها */
             z-index: 10;
         }
-
+        
         h1 {
-            font-weight: lighter;
+            font-weight: 300;
+            font-size: 3rem;
+            letter-spacing: 10px;
             margin: 0;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            animation: fadeText 3s forwards 1s;
         }
 
         p {
-            color: #aaa;
             font-size: 0.9rem;
-            margin-top: 5px;
-        }
-
-        /* --- افکت شهاب سنگ --- */
-        .shooting-star {
-            position: absolute;
-            top: 0;
-            left: -100px;
-            width: 150px;
-            height: 2px;
-            background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,1));
-            filter: drop-shadow(0 0 5px white);
-            transform: rotate(45deg); /* زاویه حرکت */
+            letter-spacing: 3px;
+            margin-top: 15px;
+            color: #aaddff;
             opacity: 0;
-            z-index: 20; /* روی نقشه باشه */
-            animation: shoot 2s ease-out forwards;
-            animation-delay: 4s; /* 4 ثانیه بعد از باز شدن سایت میاد */
+            animation: fadeText 3s forwards 2.5s;
         }
 
-        /* سر شهاب سنگ */
-        .shooting-star::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: -2px;
-            width: 6px;
-            height: 6px;
-            background: white;
-            border-radius: 50%;
-            box-shadow: 0 0 10px white, 0 0 20px #00d2ff;
-        }
+        @keyframes fadeText { to { opacity: 1; } }
 
-        @keyframes shoot {
-            0% {
-                top: -50px;
-                left: 0%;
-                opacity: 1;
-            }
-            100% {
-                top: 70%;
-                left: 100%;
-                opacity: 0;
-            }
+        /* دکمه شروع */
+        #start-btn {
+            position: absolute; bottom: 10%; left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 30px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-family: sans-serif;
+            letter-spacing: 2px;
+            transition: 0.5s;
+            z-index: 20;
         }
-
+        #start-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
     </style>
 </head>
 <body>
 
-    <div class="title-box">
-        <h1>ستاره‌های شبی که تو را دیدم</h1>
-        <p>مشهد - ۲۲ ژانویه ۲۰۲۴</p>
+    <div id="ui-layer">
+        <h1 id="name-display">NAME HERE</h1>
+        <p>MASHHAD - JAN 22, 2024</p>
     </div>
 
-    <div class="container">
-        <div class="shooting-star"></div>
+    <button id="start-btn">LOOK UP</button>
 
-        <iframe 
-            src="https://virtualsky.lco.global/embed/index.html?longitude=59.6168&latitude=36.2605&date=2024-01-22T21:00:00&projection=stereo&constellations=true&constellationlabels=true&showstarlabels=true&live=false&az=180" 
-            allowtransparency="true">
-        </iframe>
-    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
+    <script>
+        // --- تنظیمات شخصی ---
+        const CONFIG = {
+            name: "ESME OON", // اسم پارتنرت رو اینجا بنویس
+            starCount: 6000, // تعداد ستاره‌ها
+            galaxyColor: 0x99ccff, // تم رنگی کهکشان (آبی یخی)
+            shootingStarDelay: 4000 // تاخیر شهاب سنگ (میلی ثانیه)
+        };
+
+        document.getElementById('name-display').innerText = CONFIG.name;
+
+        // --- متغیرهای اصلی Three.js ---
+        let scene, camera, renderer, stars, starGeo, shootingStar;
+        let galaxyParticles;
+        
+        function init() {
+            // 1. ساخت صحنه
+            scene = new THREE.Scene();
+            // مه (Fog) برای عمق دادن به صحنه (مثل هوای واقعی شب)
+            scene.fog = new THREE.FogExp2(0x050510, 0.0005); 
+
+            // 2. دوربین
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+            camera.position.z = 1;
+            camera.rotation.x = Math.PI / 2;
+
+            // 3. رندر کننده (WebGL)
+            renderer = new THREE.WebGLRenderer({ antialias: true }); // آنتی‌الیاس برای لبه‌های نرم
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio); // کیفیت رتینا برای موبایل
+            document.body.appendChild(renderer.domElement);
+
+            // 4. ساخت ستاره‌ها
+            createStarField();
+            createRealStars(); // اضافه کردن صورت فلکی جبار به صورت دستی برای اطمینان
+
+            // 5. نور پردازی محیطی
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            // شروع انیمیشن
+            animate();
+            
+            // مدیریت ریسایز پنجره
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        // --- ساخت بافت ستاره (دایره‌ای نرم و درخشان) با کد ---
+        function createStarTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32; canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            
+            const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+            gradient.addColorStop(0.5, 'rgba(200, 220, 255, 0.2)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 32, 32);
+            
+            const texture = new THREE.Texture(canvas);
+            texture.needsUpdate = true;
+            return texture;
+        }
+
+        function createStarField() {
+            starGeo = new THREE.BufferGeometry();
+            const positions = [];
+            const colors = [];
+            const sizes = [];
+            const colorObj = new THREE.Color();
+
+            for(let i=0; i<CONFIG.starCount; i++) {
+                // توزیع کروی ستاره‌ها
+                const r = 600; // شعاع کره آسمان
+                const theta = 2 * Math.PI * Math.random();
+                const phi = Math.acos(2 * Math.random() - 1);
+                
+                const x = r * Math.sin(phi) * Math.cos(theta);
+                const y = r * Math.sin(phi) * Math.sin(theta);
+                const z = r * Math.cos(phi);
+
+                positions.push(x, y, z);
+
+                // رنگ‌بندی واقع‌گرایانه (سفید، آبی، کمی زرد)
+                const starType = Math.random();
+                if (starType > 0.9) colorObj.setHex(0xaabfff); // Blue giant
+                else if (starType > 0.7) colorObj.setHex(0xffddaa); // Yellow/Red
+                else colorObj.setHex(0xffffff); // White
+                
+                colors.push(colorObj.r, colorObj.g, colorObj.b);
+                
+                // سایز رندوم
+                sizes.push(Math.random() * 2); 
+            }
+
+            starGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            starGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            starGeo.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+
+            // متریال شیدر (Shader) برای درخشش
+            const material = new THREE.PointsMaterial({
+                map: createStarTexture(),
+                size: 1.5,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.9,
+                blending: THREE.AdditiveBlending, // ترکیب نوری (درخشش)
+                depthWrite: false
+            });
+
+            stars = new THREE.Points(starGeo, material);
+            scene.add(stars);
+        }
+
+        // اضافه کردن ستاره‌های اصلی (مثل جبار) برای اینکه شبیه آسمان زمستان باشد
+        function createRealStars() {
+            // مختصات حدودی صورت فلکی جبار در کره آسمان
+            const brightStarsGeo = new THREE.BufferGeometry();
+            const positions = [];
+            
+            // لیستی از ستاره‌های پرنور (Betelgeuse, Rigel, Belt...)
+            // x, y, z manually positioned to look like Orion
+            const orionStars = [
+                {x: 50, y: 50, z: -500, c: 0xffaa88, s: 8}, // Betelgeuse (Red)
+                {x: -40, y: -60, z: -500, c: 0xaaccff, s: 8}, // Rigel (Blue)
+                {x: -10, y: 0, z: -500, c: 0xffffff, s: 5}, // Belt 1
+                {x: 0, y: 5, z: -500, c: 0xffffff, s: 5}, // Belt 2
+                {x: 10, y: 10, z: -500, c: 0xffffff, s: 5}, // Belt 3
+                {x: 40, y: -50, z: -500, c: 0xaaccff, s: 6}, // Saiph
+                {x: -50, y: 40, z: -500, c: 0xaaccff, s: 6}, // Bellatrix
+                {x: -150, y: -150, z: -500, c: 0xffffff, s: 10}, // Sirius (خیلی پرنور)
+            ];
+
+            const p = []; const c = []; const s = [];
+            const col = new THREE.Color();
+
+            orionStars.forEach(star => {
+                p.push(star.x, star.y, star.z);
+                col.setHex(star.c);
+                c.push(col.r, col.g, col.b);
+                s.push(star.s);
+            });
+
+            brightStarsGeo.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));
+            brightStarsGeo.setAttribute('color', new THREE.Float32BufferAttribute(c, 3));
+            
+            const mat = new THREE.PointsMaterial({
+                map: createStarTexture(),
+                size: 6, // سایز پایه
+                vertexColors: true,
+                transparent: true,
+                blending: THREE.AdditiveBlending
+            });
+            
+            const brightStars = new THREE.Points(brightStarsGeo, mat);
+            scene.add(brightStars);
+        }
+
+        // --- سیستم شهاب سنگ ---
+        function launchShootingStar() {
+            // ساخت هندسه شهاب سنگ (یک خط کشیده شده)
+            const geometry = new THREE.BufferGeometry();
+            // مختصات شروع و پایان (برای طول شهاب)
+            const points = [];
+            points.push(new THREE.Vector3(0, 0, 0));
+            points.push(new THREE.Vector3(-40, 10, 0)); // طول دنباله
+            geometry.setFromPoints(points);
+
+            const material = new THREE.LineBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 1,
+                linewidth: 2
+            });
+
+            shootingStar = new THREE.Line(geometry, material);
+            
+            // موقعیت شروع (بالا سمت راست)
+            shootingStar.position.set(200, 200, -300);
+            scene.add(shootingStar);
+            
+            // انیمیت کردن
+            animateShootingStar();
+        }
+
+        function animateShootingStar() {
+            if (!shootingStar) return;
+            
+            // حرکت مورب
+            shootingStar.position.x -= 4; // سرعت افقی
+            shootingStar.position.y -= 2; // سرعت عمودی
+            
+            // محو شدن تدریجی
+            shootingStar.material.opacity -= 0.005;
+
+            if (shootingStar.material.opacity > 0) {
+                requestAnimationFrame(animateShootingStar);
+            } else {
+                scene.remove(shootingStar);
+            }
+        }
+
+        // --- حلقه اصلی انیمیشن ---
+        function animate() {
+            // چرخش آرام کل آسمان (شبیه‌سازی گردش زمین)
+            stars.rotation.y -= 0.0002;
+            stars.rotation.x -= 0.00005;
+
+            // تپش (Twinkle) ستاره‌ها
+            const positions = starGeo.attributes.position.array;
+            // اینجا می‌توان الگوریتم پیچیده‌تری برای چشمک زدن نوشت
+            // اما برای پرفورمنس بالا، چرخش کافیست
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // --- شروع با دکمه ---
+        const btn = document.getElementById('start-btn');
+        btn.addEventListener('click', () => {
+            btn.style.opacity = 0;
+            setTimeout(() => btn.style.display = 'none', 1000);
+            
+            init();
+
+            // شلیک شهاب سنگ بعد از زمان مشخص
+            setTimeout(launchShootingStar, CONFIG.shootingStarDelay);
+        });
+
+    </script>
 </body>
 </html>
