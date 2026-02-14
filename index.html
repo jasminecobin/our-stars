@@ -3,23 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>The Code of My Heart</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Vazirmatn:wght@300;700&display=swap" rel="stylesheet">
+  <title>From Heart to Stars</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400&family=Vazirmatn:wght@300;700&display=swap" rel="stylesheet">
   
   <style>
-    /* --- تنظیمات کلی و ریست --- */
     body, html {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #050505; /* مشکی خیلی تیره */
+      background-color: #050505;
       font-family: 'Vazirmatn', sans-serif;
       color: white;
     }
 
-    /* --- بوم نقاشی (Canvas) --- */
     canvas {
       display: block;
       position: absolute;
@@ -28,7 +26,7 @@
       z-index: 1;
     }
 
-    /* --- لایه محتوا (روی ذرات) --- */
+    /* لایه محتوا با قابلیت محو شدن */
     .content-layer {
       position: absolute;
       top: 50%;
@@ -36,49 +34,39 @@
       transform: translate(-50%, -50%);
       text-align: center;
       z-index: 10;
-      pointer-events: none; /* موس از روی متن رد شه برسه به ذرات */
+      pointer-events: none;
       width: 100%;
+      transition: opacity 2s ease-in-out; /* افکت محو شدن نرم */
     }
 
-    /* --- استایل متن‌ها --- */
+    /* کلاسی که وقتی اضافه شود، محتوا را مخفی میکند */
+    .fade-out {
+      opacity: 0 !important;
+    }
+
     .title {
-      font-family: 'Vazirmatn', sans-serif;
       font-weight: 700;
       font-size: 3rem;
       color: #fff;
       text-shadow: 0 0 15px rgba(255, 20, 147, 0.6);
       margin-bottom: 10px;
-      opacity: 0; /* مخفی تا وقتی انیمیشن شروع شه */
-      transition: opacity 1s ease-in;
+      opacity: 0;
     }
 
     .subtitle {
-      font-family: 'Fira Code', monospace; /* فونت برنامه‌نویسی */
+      font-family: 'Fira Code', monospace;
       color: #ff8fa3;
       font-size: 1.1rem;
-      direction: ltr; /* برای نمایش درست کد */
+      direction: ltr;
       background: rgba(0, 0, 0, 0.6);
       padding: 5px 15px;
       border-radius: 5px;
       display: inline-block;
       margin-top: 10px;
       border: 1px solid #ff8fa3;
+      opacity: 0;
     }
 
-    /* --- شمارشگر پایین صفحه --- */
-    .timer {
-      position: absolute;
-      bottom: 30px;
-      width: 100%;
-      text-align: center;
-      color: #888;
-      font-size: 0.9rem;
-      font-family: 'Fira Code', monospace;
-      z-index: 10;
-      direction: ltr;
-    }
-
-    /* --- صفحه شروع (Overlay) --- */
     #start-overlay {
       position: fixed;
       top: 0;
@@ -95,7 +83,7 @@
 
     .start-btn {
       padding: 15px 40px;
-      border: 2px solid #00ff41; /* سبز هکری */
+      border: 2px solid #00ff41;
       color: #00ff41;
       background: transparent;
       font-family: 'Fira Code', monospace;
@@ -103,231 +91,224 @@
       cursor: pointer;
       border-radius: 5px;
       transition: all 0.3s;
-      text-transform: uppercase;
-      letter-spacing: 2px;
     }
 
     .start-btn:hover {
-      background: #00ff41;
-      color: #000;
-      box-shadow: 0 0 20px #00ff41;
+      background: #00ff41; color: #000; box-shadow: 0 0 20px #00ff41;
     }
-
   </style>
 </head>
 <body>
 
   <div id="start-overlay">
-    <button class="start-btn" onclick="startExperience()">Initialize &lt;Love/&gt;</button>
+    <button class="start-btn" onclick="startExperience()">Start Sequence</button>
   </div>
 
-  <div class="content-layer">
+  <div class="content-layer" id="main-content">
     <div id="main-title" class="title"></div>
     <div id="code-subtitle" class="subtitle"></div>
   </div>
 
-  <canvas id="heart"></canvas>
-
-  <div class="timer" id="timer">Calculating time together...</div>
-
-  <audio id="bg-music" loop>
-    <source src="music.mp3" type="audio/mpeg">
-  </audio>
+  <canvas id="projectCanvas"></canvas>
+  <audio id="bg-music" loop><source src="music.mp3" type="audio/mpeg"></audio>
 
   <script>
-    // --- تنظیمات شخصی‌سازی (اینجا رو تغییر بده) ---
+    // --- تنظیمات ---
     const config = {
-      name: "اسم عشق شما", // اسم فارسی
-      message: "while(alive) { love(you); }", // پیام کدی
-      startDate: "2023-02-14T20:00:00", // تاریخ شروع رابطه
-      particleColor: "hsla(330, 90%, 60%, 0.8)", // رنگ ذرات (صورتی)
+      name: "اسم او",
+      message: "if(heart.isFull()) { transformToStars(); }",
+      transitionDelay: 10000, // 10 ثانیه صبر قبل از تبدیل به ستاره
     };
 
-    // --- منطق شروع برنامه ---
+    let isStarMode = false; // متغیر کلیدی برای تشخیص حالت قلب یا ستاره
+
+    // --- شروع برنامه ---
     function startExperience() {
       const overlay = document.getElementById('start-overlay');
       const music = document.getElementById('bg-music');
-      
       overlay.style.opacity = '0';
       setTimeout(() => overlay.style.display = 'none', 800);
-      
-      // تلاش برای پخش موزیک
       music.volume = 0.5;
-      music.play().catch(e => console.log("Audio file not found or blocked"));
+      music.play().catch(() => {});
 
-      // شروع تایپ متن‌ها
-      setTimeout(() => typeWriter('main-title', config.name), 1000);
-      setTimeout(() => typeWriter('code-subtitle', config.message), 2500);
+      typeWriter('main-title', config.name, 1000);
+      typeWriter('code-subtitle', config.message, 2500);
       
-      // شروع انیمیشن ذرات
       initParticles();
       animate();
+
+      // تنظیم تایمر برای تبدیل شدن به ستاره
+      setTimeout(transformToStarSky, config.transitionDelay);
     }
 
-    // --- تایپ ماشینی ---
-    function typeWriter(elementId, text) {
-      const el = document.getElementById(elementId);
-      el.style.opacity = 1;
-      el.innerHTML = '';
-      let i = 0;
-      let speed = 100; // سرعت تایپ
+    // --- تابع تبدیل به آسمان ---
+    function transformToStarSky() {
+      isStarMode = true; // تغییر حالت
       
-      function type() {
-        if (i < text.length) {
-          el.innerHTML += text.charAt(i);
-          i++;
-          setTimeout(type, speed);
+      // محو کردن متن‌ها
+      document.getElementById('main-content').classList.add('fade-out');
+
+      // دادن هدف جدید به تمام ذرات موجود
+      particles.forEach(p => {
+        // هدف جدید: یک جای تصادفی در کل صفحه
+        p.targetX = Math.random() * width;
+        p.targetY = Math.random() * height;
+        
+        // تغییر رنگ به طیف سفید/آبی آسمانی
+        const hue = Math.random() * 60 + 200; // آبی تا بنفش روشن
+        p.baseColor = `hsla(${hue}, 70%, 80%,`; // رنگ پایه بدون آلفا
+        
+        // تنظیمات چشمک زدن
+        p.twinkleSpeed = Math.random() * 0.05 + 0.01;
+        p.twinkleOffset = Math.random() * Math.PI * 2;
+        
+        // کاهش سرعت برای حرکت آرام‌تر به سمت جایگاه ستاره‌ای
+        p.speed = Math.random() * 0.02 + 0.005;
+        this.friction = 0.92; 
+      });
+    }
+
+    function typeWriter(id, text, delay) {
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        el.style.opacity = 1;
+        el.innerHTML = '';
+        let i = 0;
+        let type = () => {
+          if (i < text.length) { el.innerHTML += text.charAt(i); i++; setTimeout(type, 100); }
         }
-      }
-      type();
+        type();
+      }, delay);
     }
 
-    // --- تایمر ---
-    setInterval(() => {
-      const start = new Date(config.startDate).getTime();
-      const now = new Date().getTime();
-      const diff = now - start;
-      
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const secs = Math.floor((diff % (1000 * 60)) / 1000);
-      
-      document.getElementById('timer').innerHTML = 
-        `Running for: ${days}d : ${hours}h : ${mins}m : ${secs}s`;
-    }, 1000);
-
-
-    // --- منطق ریاضی قلب و ذرات ---
-    const canvas = document.getElementById("heart");
+    // --- تنظیمات Canvas و ریاضیات ---
+    const canvas = document.getElementById("projectCanvas");
     const ctx = canvas.getContext("2d");
     let width, height;
-    
-    // تنظیم سایز
-    function resize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
+    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize); resize();
 
-    // متغیرهای ماوس
     let mouse = { x: null, y: null };
-    window.addEventListener('mousemove', (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    });
-    // وقتی موس بیرون میره
-    window.addEventListener('mouseout', () => {
-      mouse.x = null;
-      mouse.y = null;
-    });
+    window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
 
     const particles = [];
     const isMobile = window.innerWidth < 768;
-    const particleCount = isMobile ? 1500 : 3500; // تعداد ذرات
-    const heartScale = isMobile ? 120 : 220; // اندازه قلب
+    // تعداد ذرات را کمی کمتر کردیم تا در حالت ستاره زیباتر باشد
+    const particleCount = isMobile ? 1000 : 2500; 
+    const heartScale = isMobile ? 120 : 220;
 
-    // فرمول قلب
     function getHeartPoint(t) {
       const x = 16 * Math.pow(Math.sin(t), 3);
       const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-      return {
-        x: x * (heartScale / 18) + width / 2,
-        y: -y * (heartScale / 18) + height / 2
-      };
+      return { x: x * (heartScale / 18) + width / 2, y: -y * (heartScale / 18) + height / 2 };
     }
 
     class Particle {
       constructor() {
-        this.reset();
-        // شروع تصادفی از اطراف صفحه
         this.x = Math.random() * width;
         this.y = Math.random() * height;
+        this.resetHeart();
       }
 
-      reset() {
-        // اختصاص یک مکان هدف روی محیط قلب
+      resetHeart() {
         const t = Math.random() * Math.PI * 2;
         const pos = getHeartPoint(t);
         this.targetX = pos.x;
         this.targetY = pos.y;
-        this.size = Math.random() * 2;
+        this.size = Math.random() * 1.5 + 0.5; // ستاره‌ها ریزتر قشنگ‌ترند
         this.speed = Math.random() * 0.05 + 0.02;
         this.friction = 0.95;
-        this.vx = 0;
-        this.vy = 0;
-        // اضافه کردن کمی آشفتگی به هدف (که قلب خیلی خط‌کشی شده نباشه)
-        this.targetX += (Math.random() - 0.5) * 20; 
-        this.targetY += (Math.random() - 0.5) * 20;
+        this.vx = 0; this.vy = 0;
+        // رنگ اولیه صورتی
+        this.baseColor = `hsla(330, 90%, 60%,`; 
+        this.alpha = 1;
       }
 
       update() {
-        // محاسبه فاصله تا هدف
+        // حرکت پایه به سمت هدف (مشترک در هر دو حالت)
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
-        
-        // حرکت نرم به سمت هدف
         this.vx += dx * this.speed * 0.05;
         this.vy += dy * this.speed * 0.05;
-        
         this.vx *= this.friction;
         this.vy *= this.friction;
 
-        // --- تعامل با ماوس (فیزیک دافعه) ---
-        if (mouse.x != null) {
-          const mouseDx = mouse.x - this.x;
-          const mouseDy = mouse.y - this.y;
-          const distance = Math.sqrt(mouseDx*mouseDx + mouseDy*mouseDy);
-          const forceRadius = 100;
+        if (!isStarMode) {
+          // --- منطق حالت قلب ---
+          // تعامل با ماوس فقط در حالت قلب
+          if (mouse.x != null) {
+            const mdx = mouse.x - this.x;
+            const mdy = mouse.y - this.y;
+            const dist = Math.sqrt(mdx*mdx + mdy*mdy);
+            const forceRad = 100;
+            if (dist < forceRad) {
+              const force = (forceRad - dist) / forceRad;
+              this.vx -= (mdx/dist) * force * 5;
+              this.vy -= (mdy/dist) * force * 5;
+            }
+          }
+          // تپش و لرزش در حالت قلب
+          const time = Date.now() / 1000;
+          this.x += Math.sin(time * 2 + this.x) * 0.2; 
+          this.y += Math.cos(time * 2 + this.y) * 0.2;
+          this.alpha = 0.8; // شفافیت ثابت
 
-          if (distance < forceRadius) {
-            const forceDirectionX = mouseDx / distance;
-            const forceDirectionY = mouseDy / distance;
-            const force = (forceRadius - distance) / forceRadius;
-            
-            // پرتاب شدن ذرات به عقب
-            this.vx -= forceDirectionX * force * 5; 
-            this.vy -= forceDirectionY * force * 5;
+        } else {
+          // --- منطق حالت ستاره ---
+          // محاسبه چشمک زدن با استفاده از سینوس
+          const time = Date.now() / 1000;
+          // آلفا بین 0.3 تا 1 تغییر میکند
+          this.alpha = Math.sin(time * this.twinkleSpeed + this.twinkleOffset) * 0.35 + 0.65; 
+          
+          // وقتی به جایگاه ستاره‌ای رسیدند، تقریباً متوقف شوند
+          if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+              this.vx = 0;
+              this.vy = 0;
+              this.x = this.targetX;
+              this.y = this.targetY;
           }
         }
 
         this.x += this.vx;
         this.y += this.vy;
-
-        // تپش قلب (حرکت سینوسی خفیف)
-        const time = Date.now() / 1000;
-        const pulse = Math.sin(time * 2) * 0.5; // سرعت تپش
-        this.x += pulse * (this.x - width/2) * 0.002;
-        this.y += pulse * (this.y - height/2) * 0.002;
       }
 
       draw() {
-        ctx.fillStyle = config.particleColor;
+        // ترکیب رنگ پایه با آلفای محاسبه شده
+        ctx.fillStyle = `${this.baseColor} ${this.alpha})`;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        // در حالت ستاره، اندازه کمی با درخشش تغییر کند
+        let currentSize = this.size;
+        if(isStarMode) {
+             currentSize = this.size * (this.alpha * 0.8 + 0.2);
+        }
+        ctx.arc(this.x, this.y, currentSize, 0, Math.PI * 2);
         ctx.fill();
       }
     }
 
     function initParticles() {
-      for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-      }
+      for (let i = 0; i < particleCount; i++) particles.push(new Particle());
     }
 
     function animate() {
-      // ایجاد ردپا (Trail Effect)
-      ctx.fillStyle = "rgba(5, 5, 5, 0.1)"; // عدد آخر شفافیت ردپاست
+      // اگر در حالت ستاره هستیم، ردپا کمتر باشد تا آسمان شفاف‌تر شود
+      ctx.fillStyle = isStarMode ? "rgba(5, 5, 5, 0.3)" : "rgba(5, 5, 5, 0.1)";
       ctx.fillRect(0, 0, width, height);
+      
+      // اضافه کردن یک گرادینت ملایم برای عمق دادن به آسمان شب
+      if (isStarMode) {
+         const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width);
+         gradient.addColorStop(0, "rgba(10, 20, 40, 0.3)"); // مرکز کمی روشن‌تر
+         gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+         ctx.fillStyle = gradient;
+         ctx.fillRect(0,0,width,height);
+      }
 
-      particles.forEach(p => {
-        p.update();
-        p.draw();
-      });
+      particles.forEach(p => { p.update(); p.draw(); });
       requestAnimationFrame(animate);
     }
-
   </script>
 </body>
 </html>
