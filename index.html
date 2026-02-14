@@ -1,246 +1,171 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal of Love</title>
-    <style>
-        /* --- استایل‌های کلی --- */
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #0d1b2a;
-            color: #00ff41; /* رنگ سبز هکری */
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  <meta charset="UTF-8">
+  <title>فرمول عشق ما</title>
+  <style>
+    /* تنظیمات صفحه: تمام صفحه و مشکی */
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #000000;
+      font-family: 'Tahoma', sans-serif;
+    }
 
-        /* --- پس‌زمینه ستاره‌ای --- */
-        #bg-image {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.3; /* تاریکش کردیم که متن معلوم باشه */
-            z-index: -1;
-        }
+    /* بوم نقاشی (Canvas) */
+    canvas {
+      display: block;
+    }
 
-        /* --- کادر ترمینال --- */
-        .terminal-window {
-            width: 80%;
-            max-width: 700px;
-            height: 60vh;
-            background: rgba(0, 0, 0, 0.85);
-            border: 2px solid #00ff41;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+    /* متنی که وسط قلب نشون داده میشه */
+    .content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: white;
+      pointer-events: none; /* موس از روش رد بشه و به ذرات بخوره */
+      z-index: 10;
+    }
 
-        .terminal-header {
-            background: #00ff41;
-            color: black;
-            padding: 5px 10px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-        }
+    h1 {
+      font-weight: 100;
+      font-size: 2.5rem;
+      text-shadow: 0 0 20px rgba(255, 20, 147, 0.8); /* سایه صورتی نئونی */
+      margin: 0;
+    }
 
-        .terminal-body {
-            padding: 20px;
-            flex-grow: 1;
-            overflow-y: auto;
-            text-align: left; /* چپ‌چین برای حس کدنویسی */
-            direction: ltr;
-        }
-
-        /* --- خط فرمان --- */
-        .output-line {
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-
-        .input-area {
-            display: flex;
-            align-items: center;
-        }
-
-        .prompt {
-            color: #ff00ff; /* رنگ صورتی برای یوزر */
-            margin-right: 10px;
-        }
-
-        input {
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-family: 'Courier New', monospace;
-            font-size: 16px;
-            flex-grow: 1;
-            outline: none;
-        }
-
-        /* --- افکت تایپ شدن --- */
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-        .cursor {
-            display: inline-block;
-            width: 10px;
-            height: 18px;
-            background: #00ff41;
-            animation: blink 1s step-end infinite;
-        }
-
-        /* --- پاپ‌آپ عکس (برای خاطرات) --- */
-        #image-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        #modal-img {
-            max-width: 80%;
-            max-height: 80%;
-            border: 5px solid white;
-            border-radius: 10px;
-        }
-        #close-btn {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            color: white;
-            font-size: 30px;
-            cursor: pointer;
-        }
-    </style>
+    p {
+      color: #ffb7b2;
+      font-size: 1rem;
+      margin-top: 10px;
+      letter-spacing: 2px;
+    }
+  </style>
 </head>
 <body>
 
-    <img src="stars.jpg" id="bg-image" alt="Starry Night">
+  <div class="content">
+    <h1>[اسم او]</h1> <p>تو تنها منطقِ دنیایِ کدهای منی</p>
+  </div>
 
-    <div class="terminal-window">
-        <div class="terminal-header">
-            <span>root@heart:~</span>
-            <span>❤️ bash</span>
-        </div>
-        <div class="terminal-body" id="terminal-output">
-            <div class="output-line">System initialized...</div>
-            <div class="output-line">Connected to heart database...</div>
-            <div class="output-line">Welcome, Princess. Type <span style="color:#ffcc00">'help'</span> to see available commands.</div>
-            <br>
-        </div>
-        <div class="terminal-body" style="padding-top: 0; flex-grow: 0;">
-            <div class="input-area">
-                <span class="prompt">user@love:~$</span>
-                <input type="text" id="command-input" autocomplete="off" autofocus>
-            </div>
-        </div>
-    </div>
+  <canvas id="heart"></canvas>
 
-    <div id="image-modal">
-        <span id="close-btn" onclick="closeModal()">&times;</span>
-        <img id="modal-img" src="">
-    </div>
+  <script>
+    /* اینجا جادوی ریاضی اتفاق میفته!
+       ما از فرمول قلبی شکل استفاده میکنیم تا مکان ذرات رو تعیین کنیم.
+    */
+    
+    window.requestAnimationFrame =
+      window.requestAnimationFrame ||
+      function (callback) {
+        return window.setTimeout(callback, 1000 / 60);
+      };
 
-    <audio id="bg-music" loop>
-        <source src="music.mp3" type="audio/mpeg">
-    </audio>
+    var canvas = document.getElementById("heart");
+    var ctx = canvas.getContext("2d");
+    
+    // تنظیم سایز کانواس
+    var w = (canvas.width = window.innerWidth);
+    var h = (canvas.height = window.innerHeight);
+    
+    // مقیاس قلب (بزرگی و کوچکی)
+    var heartScale = window.innerWidth < 600 ? 150 : 250; 
 
-    <script>
-        const input = document.getElementById('command-input');
-        const output = document.getElementById('terminal-output');
-        const music = document.getElementById('bg-music');
-        const modal = document.getElementById('image-modal');
-        const modalImg = document.getElementById('modal-img');
+    // تعداد ذرات (هر چی بیشتر، تراکم قلب بیشتر)
+    var particleCount = window.innerWidth < 600 ? 2000 : 4000; 
 
-        // لیست دستورات و پاسخ‌ها (اینجا رو شخصی‌سازی کن!)
-        const commands = {
-            'help': 'Available commands:<br>- <span style="color:#ffcc00">about</span>: Who created this?<br>- <span style="color:#ffcc00">date</span>: When did it all start?<br>- <span style="color:#ffcc00">us</span>: Shows our best photo.<br>- <span style="color:#ffcc00">music</span>: Play/Pause our song.<br>- <span style="color:#ffcc00">clear</span>: Clear screen.',
-            
-            'about': 'Created with Python, HTML, and lots of Love by [اسم خودت را اینجا بنویس].',
-            
-            'date': 'Project "Relationship" started on: 14 Feb 2023.<br>Status: Running perfectly without bugs.',
-            
-            'sudo love': 'Access Granted. I love you more than code!', // یه دستور مخفی باحال
-            
-            'us': 'Opening memory module...', // این دستور عکس رو باز میکنه
-        };
+    var particles = [];
 
-        // گوش دادن به دکمه Enter
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                const command = input.value.toLowerCase().trim();
-                processCommand(command);
-                input.value = ''; // پاک کردن ورودی
-            }
-        });
+    // فرمول ریاضی قلب:
+    // x = 16 * sin(t)^3
+    // y = 13 * cos(t) - 5 * cos(2*t) - 2 * cos(3*t) - cos(4*t)
+    function getHeartPoint(factor) {
+      var t = factor * Math.PI * 2;
+      var x = 16 * Math.pow(Math.sin(t), 3);
+      var y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+      
+      // تبدیل مختصات ریاضی به مختصات صفحه نمایش
+      return {
+        x: x * (heartScale / 20) + w / 2, // وسط چین کردن افقی
+        y: -y * (heartScale / 20) + h / 2  // وسط چین کردن عمودی (منفی چون محور y در کانواس برعکسه)
+      };
+    }
 
-        function processCommand(cmd) {
-            // اضافه کردن دستور کاربر به صفحه
-            output.innerHTML += `<div class="output-line"><span class="prompt">user@love:~$</span> ${cmd}</div>`;
+    // کلاس ذره (Particle Class)
+    var Particle = function () {
+      // مکان اولیه تصادفی
+      this.x = Math.random() * w;
+      this.y = Math.random() * h;
+      
+      // هدف نهایی (نقطه‌ای روی محیط قلب)
+      var p = getHeartPoint(Math.random());
+      this.targetX = p.x;
+      this.targetY = p.y;
+      
+      // ویژگی‌های ظاهری
+      this.shade = Math.floor(Math.random() * 50) + 320; // طیف رنگ صورتی/بنفش
+      this.size = Math.random() * 2; // اندازه ذره
+      this.speed = Math.random() * 0.05 + 0.02; // سرعت حرکت
+    };
 
-            // منطق دستورات
-            if (commands[cmd]) {
-                if (cmd === 'us') {
-                    showImage(); // تابع نمایش عکس
-                } 
-                output.innerHTML += `<div class="output-line">${commands[cmd]}</div>`;
-            } 
-            else if (cmd === 'clear') {
-                output.innerHTML = '';
-            }
-            else if (cmd === 'music') {
-                toggleMusic();
-            }
-            else {
-                output.innerHTML += `<div class="output-line" style="color:red;">Command not found: ${cmd}. Try 'help'.</div>`;
-            }
+    Particle.prototype.update = function () {
+      // حرکت نرم به سمت هدف (Interpolation)
+      var dx = this.targetX - this.x;
+      var dy = this.targetY - this.y;
+      
+      // هر چه نزدیک تر میشه آروم تر میشه
+      this.x += dx * this.speed;
+      this.y += dy * this.speed;
+      
+      // اضافه کردن لرزش (Jitter) برای اینکه زنده به نظر بیاد
+      this.x += (Math.random() - 0.5) * 2;
+      this.y += (Math.random() - 0.5) * 2;
+    };
 
-            // اسکرول به پایین
-            output.scrollTop = output.scrollHeight;
-        }
+    Particle.prototype.draw = function () {
+      ctx.fillStyle = "hsla(" + this.shade + ", 90%, 60%, 0.8)";
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    };
 
-        // توابع کمکی
-        function toggleMusic() {
-            if (music.paused) {
-                music.play();
-                output.innerHTML += `<div class="output-line">🎵 Music started...</div>`;
-            } else {
-                music.pause();
-                output.innerHTML += `<div class="output-line">⏸ Music paused.</div>`;
-            }
-        }
+    // ساختن ذرات
+    function init() {
+      for (var i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+    }
 
-        function showImage() {
-            // اینجا آدرس عکسی که میخوای نشون داده بشه رو بذار
-            // میتونی همون عکس ستاره‌ها باشه یا یه عکس دونفره که توی گیت‌هاب آپلود کردی
-            modalImg.src = "stars.jpg"; 
-            modal.style.display = "flex";
-        }
+    // حلقه انیمیشن
+    function loop() {
+      // پاک کردن صفحه قبلی با کمی ردپا (برای افکت دنباله دار بودن)
+      ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+      ctx.fillRect(0, 0, w, h);
 
-        function closeModal() {
-            modal.style.display = "none";
-        }
+      // آپدیت و رسم همه ذرات
+      for (var i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+      
+      requestAnimationFrame(loop);
+    }
 
-        // فوکوس همیشه روی اینپوت باشه
-        document.onclick = function() {
-            input.focus();
-        };
-    </script>
+    // مدیریت تغییر سایز پنجره
+    window.onresize = function() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    };
+
+    // شروع
+    init();
+    loop();
+
+  </script>
 </body>
 </html>
