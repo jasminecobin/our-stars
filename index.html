@@ -1,3 +1,15 @@
+حق با توست! توی کدی که فرستادی، بخش مربوط به **شهاب‌سنگ‌ها (ShootingStar)** ناقص شده بود و برای همین دیگه دیده نمی‌شدن. همچنین چون گفتی **عکس‌هات رو آپلود کردی**، من کد رو تغییر دادم که به جای "رنگ خالی"، واقعاً **عکس‌های قشنگتون** رو نشون بده.
+
+این کد **کامل و اصلاح شده** است. (مشکل شهاب‌سنگ حل شد + نمایش عکس‌ها فعال شد).
+
+### تغییرات مهم برای عکس‌ها:
+
+1. فایل‌های عکست باید دقیقاً اسمشون اینا باشه: `photo1.jpg`, `photo2.jpg`, `photo3.jpg`, `photo4.jpg` (یا توی کد، قسمت `CONFIG` اسمشون رو عوض کن).
+2. عکس‌ها رو کنار فایل HTML بذار.
+
+این کد رو کامل جایگزین قبلی کن:
+
+```html
 <!DOCTYPE html>
 <html lang="fa" dir="ltr">
 <head>
@@ -14,7 +26,7 @@
             font-family: 'Montserrat', sans-serif;
             color: white;
             user-select: none;
-            cursor: crosshair; 
+            cursor: crosshair;
         }
 
         canvas {
@@ -25,7 +37,6 @@
             z-index: 1;
         }
 
-        
         #ui-layer {
             position: absolute;
             top: 50%;
@@ -34,10 +45,9 @@
             text-align: center;
             z-index: 10;
             width: 100%;
-            pointer-events: none; 
+            pointer-events: none;
         }
 
-        
         h1 {
             font-family: 'Cinzel', serif;
             font-weight: 700;
@@ -76,9 +86,8 @@
             text-shadow: 0 0 10px #00aaff;
         }
 
-        
         #valentine-btn {
-            pointer-events: auto; 
+            pointer-events: auto;
             font-family: 'Lalezar', cursive;
             font-size: 1.4rem;
             padding: 12px 40px;
@@ -102,7 +111,6 @@
             box-shadow: 0 0 30px #ff3366;
         }
 
-        
         .click-msg {
             position: absolute;
             color: #fff;
@@ -115,30 +123,20 @@
             white-space: nowrap;
         }
 
-        
         .memory-photo {
             position: absolute;
-            width: 120px;
-            height: 160px; 
+            width: 150px;  /* کمی بزرگتر کردم که عکس‌ها بهتر دیده بشن */
+            height: 200px;
             background-size: cover;
             background-position: center;
-            border: 3px solid white;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(255,255,255,0.5);
-            bottom: -200px; 
+            border: 4px solid white;
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(255,255,255,0.6);
+            bottom: -250px;
             z-index: 5;
-            animation: floatUpScreen 15s linear forwards;
+            animation: floatUpScreen 18s linear forwards; /* سرعت حرکت کمتر شد تا عکس‌ها دیده بشن */
             transform: rotate(0deg);
         }
-
-         class ShootingStar {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = 0;
-                this.len = 0;
-                this.speed = Math.random() * 5 + 10;
-                this.active = true;
-        
 
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
         
@@ -148,10 +146,10 @@
         }
 
         @keyframes floatUpScreen {
-            0% { bottom: -200px; transform: rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
+            0% { bottom: -250px; transform: rotate(0deg) scale(0.8); opacity: 0; }
+            10% { opacity: 1; transform: scale(1); }
             90% { opacity: 1; }
-            100% { bottom: 120%; transform: rotate(10deg); opacity: 0; }
+            100% { bottom: 120%; transform: rotate(15deg); opacity: 0; }
         }
 
         #overlay {
@@ -201,31 +199,18 @@
     </audio>
 
     <script>
-
-          if (Math.random() * 1000 < 5) { 
-                shootingStars.push(new ShootingStar());
-            }
-            
-            shootingStars.forEach((ss, index) => {
-                ss.update();
-                if (!ss.active) shootingStars.splice(index, 1);
-            });
-
-            requestAnimationFrame(animate);
-        }
-
-
+        // --- تنظیمات ---
         const CONFIG = {
             partnerName: "NEGAR",
             startDate: new Date("2024-01-22T00:00:00"), 
-            starCount: 1200,
-            shootingStarFreq: 400
+            starCount: 1000,
             
             loveNotes: [
                 "عاشقتم", "توی قلبمی", "مورچه زشت", "خیلی دوستت دارم میمون", "قناری", 
                 "مرسی که هستی", "میمون افریقایی", "❤️", "زندگیم", "ملخ زشت"
             ],
 
+            // *** مهم: اسم فایل عکس‌هات رو اینجا چک کن ***
             photos: [
                 "photo1.jpg", 
                 "photo2.jpg",
@@ -234,51 +219,43 @@
             ]
         };
 
-        
         const canvas = document.getElementById('skyCanvas');
         const ctx = canvas.getContext('2d');
         let width, height;
         let stars = [];
+        let shootingStars = []; // آرایه شهاب سنگ‌ها
         let fireworks = [];
         let particles = [];
-        let heartMode = false; 
+        let heartMode = false;
 
-       
+        // تایمر
         function updateTimer() {
             const now = new Date();
             const diff = now - CONFIG.startDate;
-            
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
             const minutes = Math.floor((diff / (1000 * 60)) % 60);
             const seconds = Math.floor((diff / 1000) % 60);
-
             document.getElementById('timer-numbers').innerText = 
                 `${days} Days : ${hours} Hrs : ${minutes} Min : ${seconds} Sec`;
         }
         setInterval(updateTimer, 1000);
 
-        
+        // --- کلاس ستاره ---
         class Star {
             constructor() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                
-            
                 this.tx = this.x;
                 this.ty = this.y;
-                
                 this.size = Math.random() * 1.5;
                 this.baseColor = "255, 255, 255";
-                
                 const hue = Math.random();
                 if(hue > 0.9) this.baseColor = "200, 220, 255";
                 else if(hue > 0.6) this.baseColor = "255, 200, 200";
-
                 this.alpha = Math.random();
                 this.blinkSpeed = Math.random() * 0.02;
             }
-
             update() {
                 if (heartMode) {
                     this.x += (this.tx - this.x) * 0.05;
@@ -288,13 +265,10 @@
                     this.x -= 0.1;
                     if(this.x < 0) this.x = width;
                 }
-
                 this.alpha += this.blinkSpeed;
                 if(this.alpha > 1 || this.alpha < 0.2) this.blinkSpeed *= -1;
-
                 this.draw();
             }
-
             draw() {
                 ctx.beginPath();
                 ctx.fillStyle = `rgba(${this.baseColor}, ${this.alpha})`;
@@ -303,24 +277,55 @@
             }
         }
 
-         function calculateHeartTargets() {
+        // --- کلاس شهاب سنگ (تعمیر شد!) ---
+        class ShootingStar {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = 0;
+                this.len = 0;
+                this.speed = Math.random() * 5 + 10;
+                this.active = true;
+            }
+            update() {
+                this.x -= this.speed;
+                this.y += this.speed * 0.5;
+                this.len += 2;
+                if (this.len > 80) this.len = 80;
+                if (this.x < 0 || this.y > height) this.active = false;
+                this.draw();
+            }
+            draw() {
+                const tailX = this.x + this.len;
+                const tailY = this.y - this.len * 0.5;
+                const gradient = ctx.createLinearGradient(this.x, this.y, tailX, tailY);
+                gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+                gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+                ctx.beginPath();
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = 2;
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(tailX, tailY);
+                ctx.stroke();
+            }
+        }
+
+        // محاسبه قلب
+        function calculateHeartTargets() {
             const cx = width / 2;
             const cy = height / 2;
             const scale = Math.min(width, height) / 35; 
-
             stars.forEach((star, i) => {
                 if (i % 4 !== 0) {
                     const t = Math.random() * Math.PI * 2;
-                    
                     star.tx = cx + 16 * Math.pow(Math.sin(t), 3) * scale;
                     star.ty = cy - (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) * scale;
-                    
                     star.tx += (Math.random() - 0.5) * 10;
                     star.ty += (Math.random() - 0.5) * 10;
                 }
             });
         }
 
+        // --- کلاس آتش‌بازی و ذرات ---
         class Firework {
             constructor() {
                 this.x = Math.random() * width * 0.8 + width * 0.1;
@@ -342,9 +347,7 @@
                 ctx.fill();
             }
             explode() {
-                for(let i=0; i<50; i++) {
-                    particles.push(new Particle(this.x, this.y, this.color));
-                }
+                for(let i=0; i<50; i++) particles.push(new Particle(this.x, this.y, this.color));
             }
         }
 
@@ -363,7 +366,6 @@
                 this.vy += this.gravity;
                 this.x += this.vx; this.y += this.vy;
                 this.alpha -= 0.01;
-                
                 ctx.save();
                 ctx.globalAlpha = this.alpha;
                 ctx.fillStyle = this.color;
@@ -374,44 +376,40 @@
             }
         }
 
+        // --- نمایش عکس‌ها (اصلاح شده) ---
         function launchMemories() {
             const container = document.body;
-            
             CONFIG.photos.forEach((photoUrl, index) => {
                 setTimeout(() => {
                     const img = document.createElement('div');
                     img.className = 'memory-photo';
-                    img.style.backgroundImage = `url(${photoUrl})`;
                     
-                    img.style.backgroundColor = `hsl(${Math.random()*360}, 60%, 80%)`;
+                    // *** این خط حالا فعال شده برای نمایش عکس ***
+                    img.style.backgroundImage = `url('${photoUrl}')`;
                     
-                    img.style.left = (Math.random() * (width - 150)) + 'px';
+                    // موقعیت رندوم
+                    img.style.left = (Math.random() * (width - 200) + 50) + 'px';
                     
-                    img.innerHTML = `<div style="text-align:center; padding-top:60px; color:#333; font-weight:bold;">Memory ${index+1}</div>`;
-
                     container.appendChild(img);
                     
-                    setTimeout(() => img.remove(), 16000);
-                }, index * 2500);
+                    // حذف بعد از پایان انیمیشن
+                    setTimeout(() => img.remove(), 18000);
+                }, index * 3000); // هر 3 ثانیه یک عکس
             });
         }
 
+        // کلیک و پیام‌های مخفی
         document.addEventListener('click', (e) => {
             if(e.target.tagName === 'BUTTON') return;
-
             const msg = document.createElement('div');
             msg.className = 'click-msg';
             msg.style.left = e.clientX + 'px';
             msg.style.top = e.clientY + 'px';
-            
             const text = CONFIG.loveNotes[Math.floor(Math.random() * CONFIG.loveNotes.length)];
             msg.innerText = text;
-            
             document.body.appendChild(msg);
-            
             setTimeout(() => msg.remove(), 2000);
         });
-
 
         function init() {
             resize();
@@ -424,6 +422,17 @@
             ctx.fillRect(0, 0, width, height);
 
             stars.forEach(star => star.update());
+
+            // --- لاجیک شهاب سنگ (تعمیر شد) ---
+            if (Math.random() * 1000 < 5) { 
+                shootingStars.push(new ShootingStar());
+            }
+            
+            shootingStars.forEach((ss, index) => {
+                ss.update();
+                if (!ss.active) shootingStars.splice(index, 1);
+            });
+            // --------------------------------
 
             fireworks.forEach((fw, i) => {
                 fw.update();
@@ -446,7 +455,6 @@
         }
         window.addEventListener('resize', resize);
 
-        
         document.getElementById('start-btn').addEventListener('click', () => {
             document.getElementById('bg-music').play().catch(e => console.log("Music failed"));
             document.getElementById('overlay').style.opacity = 0;
@@ -461,20 +469,19 @@
             vBtn.innerText = "❤️ دوستت دارم ❤️";
             vBtn.style.background = "#fff";
             vBtn.style.color = "#ff3366";
-
             calculateHeartTargets();
             heartMode = true;
-
             let fwCount = 0;
             const fwInterval = setInterval(() => {
                 fireworks.push(new Firework());
                 fwCount++;
                 if(fwCount > 15) clearInterval(fwInterval);
             }, 500);
-
             setTimeout(launchMemories, 1000);
         });
 
     </script>
 </body>
 </html>
+
+```
