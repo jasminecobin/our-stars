@@ -2,169 +2,331 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>فرمول عشق ما</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>The Code of My Heart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Vazirmatn:wght@300;700&display=swap" rel="stylesheet">
+  
   <style>
-    /* تنظیمات صفحه: تمام صفحه و مشکی */
+    /* --- تنظیمات کلی و ریست --- */
     body, html {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #000000;
-      font-family: 'Tahoma', sans-serif;
+      background-color: #050505; /* مشکی خیلی تیره */
+      font-family: 'Vazirmatn', sans-serif;
+      color: white;
     }
 
-    /* بوم نقاشی (Canvas) */
+    /* --- بوم نقاشی (Canvas) --- */
     canvas {
       display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
     }
 
-    /* متنی که وسط قلب نشون داده میشه */
-    .content {
+    /* --- لایه محتوا (روی ذرات) --- */
+    .content-layer {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
-      color: white;
-      pointer-events: none; /* موس از روش رد بشه و به ذرات بخوره */
       z-index: 10;
+      pointer-events: none; /* موس از روی متن رد شه برسه به ذرات */
+      width: 100%;
     }
 
-    h1 {
-      font-weight: 100;
-      font-size: 2.5rem;
-      text-shadow: 0 0 20px rgba(255, 20, 147, 0.8); /* سایه صورتی نئونی */
-      margin: 0;
+    /* --- استایل متن‌ها --- */
+    .title {
+      font-family: 'Vazirmatn', sans-serif;
+      font-weight: 700;
+      font-size: 3rem;
+      color: #fff;
+      text-shadow: 0 0 15px rgba(255, 20, 147, 0.6);
+      margin-bottom: 10px;
+      opacity: 0; /* مخفی تا وقتی انیمیشن شروع شه */
+      transition: opacity 1s ease-in;
     }
 
-    p {
-      color: #ffb7b2;
-      font-size: 1rem;
+    .subtitle {
+      font-family: 'Fira Code', monospace; /* فونت برنامه‌نویسی */
+      color: #ff8fa3;
+      font-size: 1.1rem;
+      direction: ltr; /* برای نمایش درست کد */
+      background: rgba(0, 0, 0, 0.6);
+      padding: 5px 15px;
+      border-radius: 5px;
+      display: inline-block;
       margin-top: 10px;
+      border: 1px solid #ff8fa3;
+    }
+
+    /* --- شمارشگر پایین صفحه --- */
+    .timer {
+      position: absolute;
+      bottom: 30px;
+      width: 100%;
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+      font-family: 'Fira Code', monospace;
+      z-index: 10;
+      direction: ltr;
+    }
+
+    /* --- صفحه شروع (Overlay) --- */
+    #start-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      transition: opacity 0.8s ease-out;
+    }
+
+    .start-btn {
+      padding: 15px 40px;
+      border: 2px solid #00ff41; /* سبز هکری */
+      color: #00ff41;
+      background: transparent;
+      font-family: 'Fira Code', monospace;
+      font-size: 1.2rem;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: all 0.3s;
+      text-transform: uppercase;
       letter-spacing: 2px;
     }
+
+    .start-btn:hover {
+      background: #00ff41;
+      color: #000;
+      box-shadow: 0 0 20px #00ff41;
+    }
+
   </style>
 </head>
 <body>
 
-  <div class="content">
-    <h1>[اسم او]</h1> <p>تو تنها منطقِ دنیایِ کدهای منی</p>
+  <div id="start-overlay">
+    <button class="start-btn" onclick="startExperience()">Initialize &lt;Love/&gt;</button>
+  </div>
+
+  <div class="content-layer">
+    <div id="main-title" class="title"></div>
+    <div id="code-subtitle" class="subtitle"></div>
   </div>
 
   <canvas id="heart"></canvas>
 
+  <div class="timer" id="timer">Calculating time together...</div>
+
+  <audio id="bg-music" loop>
+    <source src="music.mp3" type="audio/mpeg">
+  </audio>
+
   <script>
-    /* اینجا جادوی ریاضی اتفاق میفته!
-       ما از فرمول قلبی شکل استفاده میکنیم تا مکان ذرات رو تعیین کنیم.
-    */
-    
-    window.requestAnimationFrame =
-      window.requestAnimationFrame ||
-      function (callback) {
-        return window.setTimeout(callback, 1000 / 60);
-      };
+    // --- تنظیمات شخصی‌سازی (اینجا رو تغییر بده) ---
+    const config = {
+      name: "اسم عشق شما", // اسم فارسی
+      message: "while(alive) { love(you); }", // پیام کدی
+      startDate: "2023-02-14T20:00:00", // تاریخ شروع رابطه
+      particleColor: "hsla(330, 90%, 60%, 0.8)", // رنگ ذرات (صورتی)
+    };
 
-    var canvas = document.getElementById("heart");
-    var ctx = canvas.getContext("2d");
-    
-    // تنظیم سایز کانواس
-    var w = (canvas.width = window.innerWidth);
-    var h = (canvas.height = window.innerHeight);
-    
-    // مقیاس قلب (بزرگی و کوچکی)
-    var heartScale = window.innerWidth < 600 ? 150 : 250; 
-
-    // تعداد ذرات (هر چی بیشتر، تراکم قلب بیشتر)
-    var particleCount = window.innerWidth < 600 ? 2000 : 4000; 
-
-    var particles = [];
-
-    // فرمول ریاضی قلب:
-    // x = 16 * sin(t)^3
-    // y = 13 * cos(t) - 5 * cos(2*t) - 2 * cos(3*t) - cos(4*t)
-    function getHeartPoint(factor) {
-      var t = factor * Math.PI * 2;
-      var x = 16 * Math.pow(Math.sin(t), 3);
-      var y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+    // --- منطق شروع برنامه ---
+    function startExperience() {
+      const overlay = document.getElementById('start-overlay');
+      const music = document.getElementById('bg-music');
       
-      // تبدیل مختصات ریاضی به مختصات صفحه نمایش
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.style.display = 'none', 800);
+      
+      // تلاش برای پخش موزیک
+      music.volume = 0.5;
+      music.play().catch(e => console.log("Audio file not found or blocked"));
+
+      // شروع تایپ متن‌ها
+      setTimeout(() => typeWriter('main-title', config.name), 1000);
+      setTimeout(() => typeWriter('code-subtitle', config.message), 2500);
+      
+      // شروع انیمیشن ذرات
+      initParticles();
+      animate();
+    }
+
+    // --- تایپ ماشینی ---
+    function typeWriter(elementId, text) {
+      const el = document.getElementById(elementId);
+      el.style.opacity = 1;
+      el.innerHTML = '';
+      let i = 0;
+      let speed = 100; // سرعت تایپ
+      
+      function type() {
+        if (i < text.length) {
+          el.innerHTML += text.charAt(i);
+          i++;
+          setTimeout(type, speed);
+        }
+      }
+      type();
+    }
+
+    // --- تایمر ---
+    setInterval(() => {
+      const start = new Date(config.startDate).getTime();
+      const now = new Date().getTime();
+      const diff = now - start;
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      document.getElementById('timer').innerHTML = 
+        `Running for: ${days}d : ${hours}h : ${mins}m : ${secs}s`;
+    }, 1000);
+
+
+    // --- منطق ریاضی قلب و ذرات ---
+    const canvas = document.getElementById("heart");
+    const ctx = canvas.getContext("2d");
+    let width, height;
+    
+    // تنظیم سایز
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // متغیرهای ماوس
+    let mouse = { x: null, y: null };
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    // وقتی موس بیرون میره
+    window.addEventListener('mouseout', () => {
+      mouse.x = null;
+      mouse.y = null;
+    });
+
+    const particles = [];
+    const isMobile = window.innerWidth < 768;
+    const particleCount = isMobile ? 1500 : 3500; // تعداد ذرات
+    const heartScale = isMobile ? 120 : 220; // اندازه قلب
+
+    // فرمول قلب
+    function getHeartPoint(t) {
+      const x = 16 * Math.pow(Math.sin(t), 3);
+      const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
       return {
-        x: x * (heartScale / 20) + w / 2, // وسط چین کردن افقی
-        y: -y * (heartScale / 20) + h / 2  // وسط چین کردن عمودی (منفی چون محور y در کانواس برعکسه)
+        x: x * (heartScale / 18) + width / 2,
+        y: -y * (heartScale / 18) + height / 2
       };
     }
 
-    // کلاس ذره (Particle Class)
-    var Particle = function () {
-      // مکان اولیه تصادفی
-      this.x = Math.random() * w;
-      this.y = Math.random() * h;
-      
-      // هدف نهایی (نقطه‌ای روی محیط قلب)
-      var p = getHeartPoint(Math.random());
-      this.targetX = p.x;
-      this.targetY = p.y;
-      
-      // ویژگی‌های ظاهری
-      this.shade = Math.floor(Math.random() * 50) + 320; // طیف رنگ صورتی/بنفش
-      this.size = Math.random() * 2; // اندازه ذره
-      this.speed = Math.random() * 0.05 + 0.02; // سرعت حرکت
-    };
+    class Particle {
+      constructor() {
+        this.reset();
+        // شروع تصادفی از اطراف صفحه
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+      }
 
-    Particle.prototype.update = function () {
-      // حرکت نرم به سمت هدف (Interpolation)
-      var dx = this.targetX - this.x;
-      var dy = this.targetY - this.y;
-      
-      // هر چه نزدیک تر میشه آروم تر میشه
-      this.x += dx * this.speed;
-      this.y += dy * this.speed;
-      
-      // اضافه کردن لرزش (Jitter) برای اینکه زنده به نظر بیاد
-      this.x += (Math.random() - 0.5) * 2;
-      this.y += (Math.random() - 0.5) * 2;
-    };
+      reset() {
+        // اختصاص یک مکان هدف روی محیط قلب
+        const t = Math.random() * Math.PI * 2;
+        const pos = getHeartPoint(t);
+        this.targetX = pos.x;
+        this.targetY = pos.y;
+        this.size = Math.random() * 2;
+        this.speed = Math.random() * 0.05 + 0.02;
+        this.friction = 0.95;
+        this.vx = 0;
+        this.vy = 0;
+        // اضافه کردن کمی آشفتگی به هدف (که قلب خیلی خط‌کشی شده نباشه)
+        this.targetX += (Math.random() - 0.5) * 20; 
+        this.targetY += (Math.random() - 0.5) * 20;
+      }
 
-    Particle.prototype.draw = function () {
-      ctx.fillStyle = "hsla(" + this.shade + ", 90%, 60%, 0.8)";
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fill();
-    };
+      update() {
+        // محاسبه فاصله تا هدف
+        const dx = this.targetX - this.x;
+        const dy = this.targetY - this.y;
+        
+        // حرکت نرم به سمت هدف
+        this.vx += dx * this.speed * 0.05;
+        this.vy += dy * this.speed * 0.05;
+        
+        this.vx *= this.friction;
+        this.vy *= this.friction;
 
-    // ساختن ذرات
-    function init() {
-      for (var i = 0; i < particleCount; i++) {
+        // --- تعامل با ماوس (فیزیک دافعه) ---
+        if (mouse.x != null) {
+          const mouseDx = mouse.x - this.x;
+          const mouseDy = mouse.y - this.y;
+          const distance = Math.sqrt(mouseDx*mouseDx + mouseDy*mouseDy);
+          const forceRadius = 100;
+
+          if (distance < forceRadius) {
+            const forceDirectionX = mouseDx / distance;
+            const forceDirectionY = mouseDy / distance;
+            const force = (forceRadius - distance) / forceRadius;
+            
+            // پرتاب شدن ذرات به عقب
+            this.vx -= forceDirectionX * force * 5; 
+            this.vy -= forceDirectionY * force * 5;
+          }
+        }
+
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // تپش قلب (حرکت سینوسی خفیف)
+        const time = Date.now() / 1000;
+        const pulse = Math.sin(time * 2) * 0.5; // سرعت تپش
+        this.x += pulse * (this.x - width/2) * 0.002;
+        this.y += pulse * (this.y - height/2) * 0.002;
+      }
+
+      draw() {
+        ctx.fillStyle = config.particleColor;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function initParticles() {
+      for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle());
       }
     }
 
-    // حلقه انیمیشن
-    function loop() {
-      // پاک کردن صفحه قبلی با کمی ردپا (برای افکت دنباله دار بودن)
-      ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-      ctx.fillRect(0, 0, w, h);
+    function animate() {
+      // ایجاد ردپا (Trail Effect)
+      ctx.fillStyle = "rgba(5, 5, 5, 0.1)"; // عدد آخر شفافیت ردپاست
+      ctx.fillRect(0, 0, width, height);
 
-      // آپدیت و رسم همه ذرات
-      for (var i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
-      }
-      
-      requestAnimationFrame(loop);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animate);
     }
-
-    // مدیریت تغییر سایز پنجره
-    window.onresize = function() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    };
-
-    // شروع
-    init();
-    loop();
 
   </script>
 </body>
