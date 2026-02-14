@@ -124,7 +124,7 @@
             z-index: 5;
             animation: floatUpScreen 18s linear forwards;
             transform: rotate(0deg);
-            background-color: #333; /* رنگ پیش فرض اگر عکس نباشد */
+            background-color: #333; 
         }
 
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
@@ -199,7 +199,7 @@
                 "مرسی که هستی", "میمون افریقایی", "❤️", "زندگیم", "ملخ زشت"
             ],
 
-            // *** عکس‌ها ***
+            
             photos: [
                 "photo1.jpg", 
                 "photo2.jpg",
@@ -217,7 +217,7 @@
         let particles = [];
         let heartMode = false;
 
-        // --- تایمر ---
+        
         function updateTimer() {
             const now = new Date();
             const diff = now - CONFIG.startDate;
@@ -233,7 +233,7 @@
         }
         setInterval(updateTimer, 1000);
 
-        // --- کلاس ستاره ---
+        
         class Star {
             constructor() {
                 this.x = Math.random() * width;
@@ -269,7 +269,7 @@
             }
         }
 
-        // --- کلاس شهاب سنگ ---
+        
         class ShootingStar {
             constructor() {
                 this.x = Math.random() * width;
@@ -301,7 +301,7 @@
             }
         }
 
-        // --- محاسبه قلب ---
+        
         function calculateHeartTargets() {
             const cx = width / 2;
             const cy = height / 2;
@@ -317,7 +317,7 @@
             });
         }
 
-        // --- کلاس آتش‌بازی ---
+        
         class Firework {
             constructor() {
                 this.x = Math.random() * width * 0.8 + width * 0.1;
@@ -368,7 +368,7 @@
             }
         }
 
-        // --- نمایش عکس‌ها ---
+        
         function launchMemories() {
             const container = document.body;
             CONFIG.photos.forEach((photoUrl, index) => {
@@ -383,7 +383,7 @@
             });
         }
 
-        // --- کلیک و پیام‌های مخفی ---
+        
         document.addEventListener('click', (e) => {
             if(e.target.tagName === 'BUTTON') return;
             const msg = document.createElement('div');
@@ -396,7 +396,7 @@
             setTimeout(() => msg.remove(), 2000);
         });
 
-        // --- حلقه اصلی ---
+        
         function init() {
             resize();
             for(let i=0; i<CONFIG.starCount; i++) stars.push(new Star());
@@ -409,7 +409,7 @@
 
             stars.forEach(star => star.update());
 
-            // شهاب سنگ (1% شانس در هر فریم)
+            
             if (Math.random() * 100 < 1) { 
                 shootingStars.push(new ShootingStar());
             }
@@ -440,19 +440,17 @@
         }
         window.addEventListener('resize', resize);
 
-        // --- دکمه شروع (شروع امن) ---
+        
         const startBtn = document.getElementById('start-btn');
         if(startBtn) {
             startBtn.addEventListener('click', () => {
                 const audio = document.getElementById('bg-music');
                 const overlay = document.getElementById('overlay');
                 
-                // تلاش برای پخش موزیک (بدون متوقف کردن برنامه)
                 if(audio) {
                     audio.play().catch(e => console.log("Music play failed (check file name)", e));
                 }
 
-                // شروع انیمیشن
                 overlay.style.opacity = 0;
                 setTimeout(() => {
                     overlay.style.display = 'none';
@@ -461,7 +459,6 @@
             });
         }
 
-        // --- دکمه ولنتاین ---
         const vBtn = document.getElementById('valentine-btn');
         if(vBtn) {
             vBtn.addEventListener('click', () => {
@@ -486,3 +483,4 @@
     </script>
 </body>
 </html>
+
