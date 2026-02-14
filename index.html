@@ -1,314 +1,453 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>From Heart to Stars</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400&family=Vazirmatn:wght@300;700&display=swap" rel="stylesheet">
-  
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background-color: #050505;
-      font-family: 'Vazirmatn', sans-serif;
-      color: white;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Star Map</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400&family=Vazirmatn:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050810;
+            --accent-color: #00f3ff;
+            --text-color: #a0a0a0;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color);
+            overflow: hidden;
+            font-family: 'Vazirmatn', sans-serif;
+            color: white;
+        }
+        canvas { display: block; }
+        
+        /* UI Layers */
+        .ui-layer {
+            position: absolute;
+            pointer-events: none;
+            width: 100%; height: 100%;
+            top: 0; left: 0;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 10;
+        }
+        
+        .title-group {
+            text-align: center;
+            transition: opacity 1s;
+        }
+        .main-title {
+            font-size: 4rem; font-weight: 700;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+            margin: 0;
+            opacity: 0; animation: fadeIn 2s forwards 0.5s;
+        }
+        .coords {
+            font-family: 'Fira Code', monospace;
+            color: var(--accent-color);
+            background: rgba(0, 20, 40, 0.8);
+            padding: 5px 15px; border-radius: 4px;
+            border: 1px solid var(--accent-color);
+            margin-top: 15px;
+            opacity: 0; animation: fadeIn 2s forwards 1.5s;
+        }
 
-    canvas {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 1;
-    }
+        /* Tooltip for Stars */
+        #star-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            pointer-events: none;
+            display: none;
+            z-index: 20;
+            box-shadow: 0 0 10px var(--accent-color);
+        }
 
-    /* لایه محتوا با قابلیت محو شدن */
-    .content-layer {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      z-index: 10;
-      pointer-events: none;
-      width: 100%;
-      transition: opacity 2s ease-in-out; /* افکت محو شدن نرم */
-    }
+        /* Start Button */
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 100;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 1s;
+        }
+        button {
+            background: transparent; border: 2px solid var(--accent-color);
+            color: var(--accent-color); padding: 15px 40px;
+            font-family: 'Fira Code', monospace; font-size: 1.2rem;
+            cursor: pointer; transition: 0.3s;
+        }
+        button:hover { background: var(--accent-color); color: #000; box-shadow: 0 0 30px var(--accent-color); }
 
-    /* کلاسی که وقتی اضافه شود، محتوا را مخفی میکند */
-    .fade-out {
-      opacity: 0 !important;
-    }
-
-    .title {
-      font-weight: 700;
-      font-size: 3rem;
-      color: #fff;
-      text-shadow: 0 0 15px rgba(255, 20, 147, 0.6);
-      margin-bottom: 10px;
-      opacity: 0;
-    }
-
-    .subtitle {
-      font-family: 'Fira Code', monospace;
-      color: #ff8fa3;
-      font-size: 1.1rem;
-      direction: ltr;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 5px 15px;
-      border-radius: 5px;
-      display: inline-block;
-      margin-top: 10px;
-      border: 1px solid #ff8fa3;
-      opacity: 0;
-    }
-
-    #start-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-      transition: opacity 0.8s ease-out;
-    }
-
-    .start-btn {
-      padding: 15px 40px;
-      border: 2px solid #00ff41;
-      color: #00ff41;
-      background: transparent;
-      font-family: 'Fira Code', monospace;
-      font-size: 1.2rem;
-      cursor: pointer;
-      border-radius: 5px;
-      transition: all 0.3s;
-    }
-
-    .start-btn:hover {
-      background: #00ff41; color: #000; box-shadow: 0 0 20px #00ff41;
-    }
-  </style>
+        @keyframes fadeIn { to { opacity: 1; } }
+        .fade-out { opacity: 0 !important; pointer-events: none; }
+    </style>
 </head>
 <body>
 
-  <div id="start-overlay">
-    <button class="start-btn" onclick="startExperience()">Start Sequence</button>
-  </div>
+    <div id="overlay">
+        <button onclick="initSystem()">INITIALIZE SYSTEM</button>
+    </div>
 
-  <div class="content-layer" id="main-content">
-    <div id="main-title" class="title"></div>
-    <div id="code-subtitle" class="subtitle"></div>
-  </div>
+    <div id="star-tooltip"></div>
 
-  <canvas id="projectCanvas"></canvas>
-  <audio id="bg-music" loop><source src="music.mp3" type="audio/mpeg"></audio>
+    <div class="ui-layer" id="main-ui">
+        <div class="title-group" id="titles">
+            <h1 class="main-title"></h1>
+            <div class="coords"></div>
+        </div>
+    </div>
 
-  <script>
-    // --- تنظیمات ---
-    const config = {
-      name: "اسم او",
-      message: "if(heart.isFull()) { transformToStars(); }",
-      transitionDelay: 10000, // 10 ثانیه صبر قبل از تبدیل به ستاره
+    <canvas id="canvas"></canvas>
+
+<script>
+    // ==========================================
+    // 1. CONFIGURATION (تنظیمات شخصی)
+    // ==========================================
+    const CONFIG = {
+        name: "NEGAR", // اسم پارتنر
+        date: new Date("2023-02-14T20:00:00"), // تاریخ دقیق
+        location: {
+            lat: 35.6892, // عرض جغرافیایی تهران
+            lng: 51.3890, // طول جغرافیایی تهران
+            name: "Tehran, IR"
+        },
+        transitionTime: 8000 // زمان تبدیل قلب به ستاره (میلی ثانیه)
     };
 
-    let isStarMode = false; // متغیر کلیدی برای تشخیص حالت قلب یا ستاره
+    // ==========================================
+    // 2. ASTRONOMICAL DATA (مینی کاتالوگ)
+    // ==========================================
+    // RA: Right Ascension (0-24h), Dec: Declination (-90 to +90 deg), Mag: Brightness, BV: Color Index
+    const BRIGHT_STARS = [
+        {name: "Sirius", ra: 6.75, dec: -16.72, mag: -1.46, bv: 0.00},
+        {name: "Canopus", ra: 6.40, dec: -52.70, mag: -0.74, bv: 0.15},
+        {name: "Arcturus", ra: 14.26, dec: 19.18, mag: -0.05, bv: 1.23},
+        {name: "Vega", ra: 18.62, dec: 38.78, mag: 0.03, bv: 0.00},
+        {name: "Capella", ra: 5.27, dec: 46.00, mag: 0.08, bv: 0.80},
+        {name: "Rigel", ra: 5.24, dec: -8.20, mag: 0.13, bv: -0.03},
+        {name: "Procyon", ra: 7.65, dec: 5.21, mag: 0.34, bv: 0.42},
+        {name: "Betelgeuse", ra: 5.92, dec: 7.41, mag: 0.50, bv: 1.85},
+        {name: "Achernar", ra: 1.63, dec: -57.23, mag: 0.46, bv: -0.16},
+        {name: "Hadar", ra: 14.06, dec: -60.37, mag: 0.61, bv: -0.23},
+        {name: "Altair", ra: 19.85, dec: 8.87, mag: 0.76, bv: 0.22},
+        {name: "Aldebaran", ra: 4.60, dec: 16.51, mag: 0.87, bv: 1.54},
+        {name: "Antares", ra: 16.49, dec: -26.43, mag: 0.96, bv: 1.83},
+        {name: "Spica", ra: 13.42, dec: -11.16, mag: 0.98, bv: -0.23},
+        {name: "Pollux", ra: 7.76, dec: 28.02, mag: 1.14, bv: 1.00},
+        {name: "Fomalhaut", ra: 22.96, dec: -29.62, mag: 1.17, bv: 0.09},
+        {name: "Deneb", ra: 20.69, dec: 45.28, mag: 1.25, bv: 0.09},
+        {name: "Regulus", ra: 10.14, dec: 11.97, mag: 1.36, bv: -0.11},
+        {name: "Adhara", ra: 6.98, dec: -28.97, mag: 1.50, bv: -0.21},
+        {name: "Castor", ra: 7.58, dec: 31.88, mag: 1.58, bv: 0.04},
+        {name: "Polaris", ra: 2.53, dec: 89.26, mag: 1.97, bv: 0.60}, // ستاره قطبی
+        // صورت فلکی جبار (Orion Belt)
+        {name: "Alnitak", ra: 5.68, dec: -1.94, mag: 1.74, bv: -0.21},
+        {name: "Alnilam", ra: 5.60, dec: -1.20, mag: 1.69, bv: -0.19},
+        {name: "Mintaka", ra: 5.53, dec: -0.30, mag: 2.25, bv: -0.22},
+        // دب اکبر (Big Dipper)
+        {name: "Dubhe", ra: 11.06, dec: 61.75, mag: 1.79, bv: 1.07},
+        {name: "Merak", ra: 11.03, dec: 56.38, mag: 2.34, bv: 0.00},
+        {name: "Phecda", ra: 11.90, dec: 53.69, mag: 2.41, bv: 0.00},
+        {name: "Megrez", ra: 12.25, dec: 57.03, mag: 3.32, bv: 0.08},
+        {name: "Alioth", ra: 12.90, dec: 55.95, mag: 1.76, bv: -0.02},
+        {name: "Mizar", ra: 13.40, dec: 54.92, mag: 2.23, bv: 0.03},
+        {name: "Alkaid", ra: 13.79, dec: 49.31, mag: 1.85, bv: -0.19},
+        // ذات الکرسی (Cassiopeia - W Shape)
+        {name: "Schedar", ra: 0.67, dec: 56.53, mag: 2.24, bv: 1.17},
+        {name: "Caph", ra: 0.15, dec: 59.15, mag: 2.28, bv: 0.38},
+        {name: "Ruchbah", ra: 1.43, dec: 60.23, mag: 2.65, bv: 0.13},
+    ];
 
-    // --- شروع برنامه ---
-    function startExperience() {
-      const overlay = document.getElementById('start-overlay');
-      const music = document.getElementById('bg-music');
-      overlay.style.opacity = '0';
-      setTimeout(() => overlay.style.display = 'none', 800);
-      music.volume = 0.5;
-      music.play().catch(() => {});
-
-      typeWriter('main-title', config.name, 1000);
-      typeWriter('code-subtitle', config.message, 2500);
-      
-      initParticles();
-      animate();
-
-      // تنظیم تایمر برای تبدیل شدن به ستاره
-      setTimeout(transformToStarSky, config.transitionDelay);
-    }
-
-    // --- تابع تبدیل به آسمان ---
-    function transformToStarSky() {
-      isStarMode = true; // تغییر حالت
-      
-      // محو کردن متن‌ها
-      document.getElementById('main-content').classList.add('fade-out');
-
-      // دادن هدف جدید به تمام ذرات موجود
-      particles.forEach(p => {
-        // هدف جدید: یک جای تصادفی در کل صفحه
-        p.targetX = Math.random() * width;
-        p.targetY = Math.random() * height;
-        
-        // تغییر رنگ به طیف سفید/آبی آسمانی
-        const hue = Math.random() * 60 + 200; // آبی تا بنفش روشن
-        p.baseColor = `hsla(${hue}, 70%, 80%,`; // رنگ پایه بدون آلفا
-        
-        // تنظیمات چشمک زدن
-        p.twinkleSpeed = Math.random() * 0.05 + 0.01;
-        p.twinkleOffset = Math.random() * Math.PI * 2;
-        
-        // کاهش سرعت برای حرکت آرام‌تر به سمت جایگاه ستاره‌ای
-        p.speed = Math.random() * 0.02 + 0.005;
-        this.friction = 0.92; 
-      });
-    }
-
-    function typeWriter(id, text, delay) {
-      setTimeout(() => {
-        const el = document.getElementById(id);
-        el.style.opacity = 1;
-        el.innerHTML = '';
-        let i = 0;
-        let type = () => {
-          if (i < text.length) { el.innerHTML += text.charAt(i); i++; setTimeout(type, 100); }
-        }
-        type();
-      }, delay);
-    }
-
-    // --- تنظیمات Canvas و ریاضیات ---
-    const canvas = document.getElementById("projectCanvas");
-    const ctx = canvas.getContext("2d");
+    // ==========================================
+    // 3. ENGINE (ریاضیات و فیزیک)
+    // ==========================================
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
     let width, height;
-    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
-    window.addEventListener('resize', resize); resize();
-
+    let particles = [];
+    let state = 'HEART'; // HEART -> EXPLOSION -> SKY
     let mouse = { x: null, y: null };
-    window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
-    window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
 
-    const particles = [];
-    const isMobile = window.innerWidth < 768;
-    // تعداد ذرات را کمی کمتر کردیم تا در حالت ستاره زیباتر باشد
-    const particleCount = isMobile ? 1000 : 2500; 
-    const heartScale = isMobile ? 120 : 220;
+    // تبدیل رنگ B-V به RGB (برای رنگ واقعی ستاره)
+    function bvToColor(bv) {
+        let t;
+        let r = 0, g = 0, b = 0;
+        if (bv < -0.4) bv = -0.4;
+        if (bv > 2.0) bv = 2.0;
+        if ((bv >= -0.40) && (bv < 0.00)) {
+            t = (bv + 0.40) / (0.00 + 0.40);
+            r = 0.61 + (0.11 * t) + (0.1 * t * t);
+            g = 0.70 + (0.07 * t) + (0.1 * t * t);
+            b = 1.0;
+        } else if ((bv >= 0.00) && (bv < 0.40)) {
+            t = (bv - 0.00) / (0.40 - 0.00);
+            r = 0.83 + (0.17 * t);
+            g = 0.87 + (0.11 * t);
+            b = 1.0;
+        } else if ((bv >= 0.40) && (bv < 2.10)) {
+            t = (bv - 0.40) / (2.10 - 0.40);
+            r = 1.0;
+            g = 0.98 - (0.16 * t);
+            b = 1.00 - (0.5 * t); // کمی اغراق در رنگ
+        }
+        return `rgb(${Math.floor(r * 255)}, ${Math.floor(g * 255)}, ${Math.floor(b * 255)})`;
+    }
 
-    function getHeartPoint(t) {
-      const x = 16 * Math.pow(Math.sin(t), 3);
-      const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-      return { x: x * (heartScale / 18) + width / 2, y: -y * (heartScale / 18) + height / 2 };
+    // محاسبات موقعیت ستاره در آسمان (Alt/Az)
+    function calculateStarPosition(star) {
+        // زمان نجومی گرینویچ (محاسبه ساده شده)
+        // برای دقت فوق العاده باید از کتابخانه های نجومی استفاده کرد، اما این فرمول برای هنر کافیست
+        const J2000 = new Date('2000-01-01T12:00:00Z');
+        const daysSinceJ2000 = (CONFIG.date - J2000) / 86400000;
+        const GMST = (18.697374558 + 24.06570982441908 * daysSinceJ2000) % 24;
+        
+        // زمان نجومی محلی (LST)
+        const LST = (GMST + CONFIG.location.lng / 15 + 24) % 24;
+        
+        // تبدیل ساعت به رادیان
+        const raRad = star.ra * 15 * Math.PI / 180;
+        const decRad = star.dec * Math.PI / 180;
+        const latRad = CONFIG.location.lat * Math.PI / 180;
+        const lstRad = LST * 15 * Math.PI / 180;
+
+        // زاویه ساعتی (Hour Angle)
+        let HA = lstRad - raRad;
+
+        // فرمول تبدیل استوایی به افقی
+        const sinAlt = Math.sin(decRad) * Math.sin(latRad) + Math.cos(decRad) * Math.cos(latRad) * Math.cos(HA);
+        const alt = Math.asin(sinAlt);
+        
+        const cosAz = (Math.sin(decRad) - Math.sin(alt) * Math.sin(latRad)) / (Math.cos(alt) * Math.cos(latRad));
+        let az = Math.acos(cosAz);
+        if (Math.sin(HA) > 0) az = 2 * Math.PI - az;
+
+        return { alt: alt, az: az };
+    }
+
+    // تبدیل مختصات کروی به صفحه 2 بعدی (Stereographic Projection)
+    function projectToScreen(alt, az) {
+        // فقط ستاره‌های بالای افق رو نشون میدیم (Alt > 0)
+        if (alt < 0) return null;
+
+        const r = Math.tan((Math.PI / 2 - alt) / 2); // فاصله از مرکز (زنیت)
+        const scale = Math.min(width, height); 
+        
+        // چرخش آسمان (شمال بالا باشد)
+        const cx = width / 2;
+        const cy = height / 2;
+        
+        const x = cx + r * scale * Math.sin(az);
+        const y = cy - r * scale * Math.cos(az);
+        
+        return { x, y };
     }
 
     class Particle {
-      constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.resetHeart();
-      }
+        constructor(isRealStar = false, starData = null) {
+            this.isRealStar = isRealStar;
+            this.starData = starData;
+            this.resetHeart();
+        }
 
-      resetHeart() {
-        const t = Math.random() * Math.PI * 2;
-        const pos = getHeartPoint(t);
-        this.targetX = pos.x;
-        this.targetY = pos.y;
-        this.size = Math.random() * 1.5 + 0.5; // ستاره‌ها ریزتر قشنگ‌ترند
-        this.speed = Math.random() * 0.05 + 0.02;
-        this.friction = 0.95;
-        this.vx = 0; this.vy = 0;
-        // رنگ اولیه صورتی
-        this.baseColor = `hsla(330, 90%, 60%,`; 
-        this.alpha = 1;
-      }
+        resetHeart() {
+            // فرمول قلب
+            let t = Math.random() * Math.PI * 2;
+            // توزیع یکنواخت‌تر داخل قلب
+            let r = Math.sqrt(Math.random()); 
+            let hScale = Math.min(width, height) / 35;
+            
+            // محیط قلب
+            let x = 16 * Math.pow(Math.sin(t), 3);
+            let y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+            
+            // موقعیت اولیه
+            this.x = (x * hScale) + width/2 + (Math.random()-0.5)*20;
+            this.y = (-y * hScale) + height/2 + (Math.random()-0.5)*20;
+            
+            // هدف در حالت قلب (همین جا بمونه با کمی لرزش)
+            this.tx = this.x;
+            this.ty = this.y;
+            
+            this.vx = 0; this.vy = 0;
+            this.friction = 0.92;
+            this.color = this.isRealStar ? bvToColor(this.starData.bv) : `rgba(255, 100, 150, ${Math.random()})`;
+            this.size = this.isRealStar ? Math.max(2, 4 - this.starData.mag) : Math.random() * 1.5;
+            this.blinkOffset = Math.random() * 100;
+        }
 
-      update() {
-        // حرکت پایه به سمت هدف (مشترک در هر دو حالت)
-        const dx = this.targetX - this.x;
-        const dy = this.targetY - this.y;
-        this.vx += dx * this.speed * 0.05;
-        this.vy += dy * this.speed * 0.05;
-        this.vx *= this.friction;
-        this.vy *= this.friction;
-
-        if (!isStarMode) {
-          // --- منطق حالت قلب ---
-          // تعامل با ماوس فقط در حالت قلب
-          if (mouse.x != null) {
-            const mdx = mouse.x - this.x;
-            const mdy = mouse.y - this.y;
-            const dist = Math.sqrt(mdx*mdx + mdy*mdy);
-            const forceRad = 100;
-            if (dist < forceRad) {
-              const force = (forceRad - dist) / forceRad;
-              this.vx -= (mdx/dist) * force * 5;
-              this.vy -= (mdy/dist) * force * 5;
+        update() {
+            if (state === 'SKY' && this.isRealStar) {
+                // محاسبه موقعیت واقعی ستاره
+                const pos = calculateStarPosition(this.starData);
+                const screenPos = projectToScreen(pos.alt, pos.az);
+                
+                if (screenPos) {
+                    this.tx = screenPos.x;
+                    this.ty = screenPos.y;
+                    this.alphaTarget = 1;
+                } else {
+                    // ستاره زیر افق است -> بفرستش بیرون صفحه
+                    this.alphaTarget = 0;
+                }
+            } else if (state === 'SKY' && !this.isRealStar) {
+                // ستاره‌های پس‌زمینه (رندوم ولی ثابت)
+                if (!this.fixedSkyPos) {
+                    this.fixedSkyPos = {
+                        x: Math.random() * width,
+                        y: Math.random() * height
+                    };
+                    this.tx = this.fixedSkyPos.x;
+                    this.ty = this.fixedSkyPos.y;
+                }
             }
-          }
-          // تپش و لرزش در حالت قلب
-          const time = Date.now() / 1000;
-          this.x += Math.sin(time * 2 + this.x) * 0.2; 
-          this.y += Math.cos(time * 2 + this.y) * 0.2;
-          this.alpha = 0.8; // شفافیت ثابت
 
-        } else {
-          // --- منطق حالت ستاره ---
-          // محاسبه چشمک زدن با استفاده از سینوس
-          const time = Date.now() / 1000;
-          // آلفا بین 0.3 تا 1 تغییر میکند
-          this.alpha = Math.sin(time * this.twinkleSpeed + this.twinkleOffset) * 0.35 + 0.65; 
-          
-          // وقتی به جایگاه ستاره‌ای رسیدند، تقریباً متوقف شوند
-          if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
-              this.vx = 0;
-              this.vy = 0;
-              this.x = this.targetX;
-              this.y = this.targetY;
-          }
+            // فیزیک حرکت
+            let dx = this.tx - this.x;
+            let dy = this.ty - this.y;
+            
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (state === 'HEART' && mouse.x) {
+                // دافعه موس در حالت قلب
+                let mdx = mouse.x - this.x;
+                let mdy = mouse.y - this.y;
+                let mDist = Math.sqrt(mdx*mdx + mdy*mdy);
+                if (mDist < 100) {
+                    this.vx -= (mdx/mDist) * 2;
+                    this.vy -= (mdy/mDist) * 2;
+                }
+            }
+
+            // جذب به هدف
+            let force = state === 'HEART' ? 0.05 : 0.02;
+            this.vx += dx * force;
+            this.vy += dy * force;
+            
+            this.vx *= this.friction;
+            this.vy *= this.friction;
+            
+            this.x += this.vx;
+            this.y += this.vy;
         }
 
-        this.x += this.vx;
-        this.y += this.vy;
-      }
+        draw() {
+            // چشمک زدن
+            let alpha = 1;
+            if (state === 'SKY') {
+                let time = Date.now() / 300;
+                alpha = Math.sin(time + this.blinkOffset) * 0.3 + 0.7;
+                if (this.alphaTarget !== undefined) alpha *= this.alphaTarget;
+            }
 
-      draw() {
-        // ترکیب رنگ پایه با آلفای محاسبه شده
-        ctx.fillStyle = `${this.baseColor} ${this.alpha})`;
-        ctx.beginPath();
-        // در حالت ستاره، اندازه کمی با درخشش تغییر کند
-        let currentSize = this.size;
-        if(isStarMode) {
-             currentSize = this.size * (this.alpha * 0.8 + 0.2);
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+
+            // درخشش (Glow) برای ستاره‌های واقعی
+            if (this.isRealStar && state === 'SKY') {
+                ctx.shadowBlur = this.size * 4;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            ctx.globalAlpha = 1;
         }
-        ctx.arc(this.x, this.y, currentSize, 0, Math.PI * 2);
-        ctx.fill();
-      }
     }
 
-    function initParticles() {
-      for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+    // ==========================================
+    // 4. MAIN LOGIC
+    // ==========================================
+    
+    function initSystem() {
+        document.getElementById('overlay').style.opacity = 0;
+        setTimeout(() => document.getElementById('overlay').style.display = 'none', 1000);
+
+        resize();
+        
+        // ساخت ذرات ستاره‌های واقعی
+        BRIGHT_STARS.forEach(star => {
+            particles.push(new Particle(true, star));
+        });
+
+        // ساخت ذرات پرکننده (Filler)
+        for(let i=0; i<1500; i++) {
+            particles.push(new Particle(false));
+        }
+
+        // انیمیشن متن‌ها
+        document.querySelector('.main-title').innerText = CONFIG.name;
+        document.querySelector('.coords').innerText = 
+            `LAT: ${CONFIG.location.lat} | LNG: ${CONFIG.location.lng} | ${CONFIG.date.toDateString()}`;
+        
+        animate();
+
+        // شروع تایمر انتقال
+        setTimeout(() => {
+            state = 'SKY';
+            document.getElementById('titles').classList.add('fade-out');
+        }, CONFIG.transitionTime);
     }
 
     function animate() {
-      // اگر در حالت ستاره هستیم، ردپا کمتر باشد تا آسمان شفاف‌تر شود
-      ctx.fillStyle = isStarMode ? "rgba(5, 5, 5, 0.3)" : "rgba(5, 5, 5, 0.1)";
-      ctx.fillRect(0, 0, width, height);
-      
-      // اضافه کردن یک گرادینت ملایم برای عمق دادن به آسمان شب
-      if (isStarMode) {
-         const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width);
-         gradient.addColorStop(0, "rgba(10, 20, 40, 0.3)"); // مرکز کمی روشن‌تر
-         gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-         ctx.fillStyle = gradient;
-         ctx.fillRect(0,0,width,height);
-      }
+        ctx.fillStyle = 'rgba(5, 8, 16, 0.3)'; // ردپای کم
+        ctx.fillRect(0, 0, width, height);
+        
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
 
-      particles.forEach(p => { p.update(); p.draw(); });
-      requestAnimationFrame(animate);
+        checkHover(); // بررسی موس روی ستاره‌ها
+        requestAnimationFrame(animate);
     }
-  </script>
+
+    // تعامل با موس (Hover)
+    const tooltip = document.getElementById('star-tooltip');
+    function checkHover() {
+        if (state !== 'SKY' || !mouse.x) {
+            tooltip.style.display = 'none';
+            return;
+        }
+        
+        let hovered = false;
+        // فقط ستاره‌های واقعی رو چک کن
+        for (let p of particles) {
+            if (p.isRealStar && p.alphaTarget > 0) {
+                let dx = mouse.x - p.x;
+                let dy = mouse.y - p.y;
+                // محدوده کلیک (Hitbox) کمی بزرگتر از خود ستاره
+                if (dx*dx + dy*dy < 100) { 
+                    tooltip.style.left = (p.x + 10) + 'px';
+                    tooltip.style.top = (p.y - 20) + 'px';
+                    tooltip.innerText = `${p.starData.name} (Mag: ${p.starData.mag})`;
+                    tooltip.style.display = 'block';
+                    document.body.style.cursor = 'pointer';
+                    hovered = true;
+                    break;
+                }
+            }
+        }
+        if (!hovered) {
+            tooltip.style.display = 'none';
+            document.body.style.cursor = 'default';
+        }
+    }
+
+    // رویدادها
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+
+</script>
 </body>
 </html>
