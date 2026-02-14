@@ -1,15 +1,3 @@
-حق با توست! توی کدی که فرستادی، بخش مربوط به **شهاب‌سنگ‌ها (ShootingStar)** ناقص شده بود و برای همین دیگه دیده نمی‌شدن. همچنین چون گفتی **عکس‌هات رو آپلود کردی**، من کد رو تغییر دادم که به جای "رنگ خالی"، واقعاً **عکس‌های قشنگتون** رو نشون بده.
-
-این کد **کامل و اصلاح شده** است. (مشکل شهاب‌سنگ حل شد + نمایش عکس‌ها فعال شد).
-
-### تغییرات مهم برای عکس‌ها:
-
-1. فایل‌های عکست باید دقیقاً اسمشون اینا باشه: `photo1.jpg`, `photo2.jpg`, `photo3.jpg`, `photo4.jpg` (یا توی کد، قسمت `CONFIG` اسمشون رو عوض کن).
-2. عکس‌ها رو کنار فایل HTML بذار.
-
-این کد رو کامل جایگزین قبلی کن:
-
-```html
 <!DOCTYPE html>
 <html lang="fa" dir="ltr">
 <head>
@@ -125,7 +113,7 @@
 
         .memory-photo {
             position: absolute;
-            width: 150px;  /* کمی بزرگتر کردم که عکس‌ها بهتر دیده بشن */
+            width: 150px; 
             height: 200px;
             background-size: cover;
             background-position: center;
@@ -134,7 +122,7 @@
             box-shadow: 0 0 25px rgba(255,255,255,0.6);
             bottom: -250px;
             z-index: 5;
-            animation: floatUpScreen 18s linear forwards; /* سرعت حرکت کمتر شد تا عکس‌ها دیده بشن */
+            animation: floatUpScreen 18s linear forwards; 
             transform: rotate(0deg);
         }
 
@@ -199,7 +187,6 @@
     </audio>
 
     <script>
-        // --- تنظیمات ---
         const CONFIG = {
             partnerName: "NEGAR",
             startDate: new Date("2024-01-22T00:00:00"), 
@@ -210,7 +197,6 @@
                 "مرسی که هستی", "میمون افریقایی", "❤️", "زندگیم", "ملخ زشت"
             ],
 
-            // *** مهم: اسم فایل عکس‌هات رو اینجا چک کن ***
             photos: [
                 "photo1.jpg", 
                 "photo2.jpg",
@@ -223,12 +209,11 @@
         const ctx = canvas.getContext('2d');
         let width, height;
         let stars = [];
-        let shootingStars = []; // آرایه شهاب سنگ‌ها
+        let shootingStars = [];
         let fireworks = [];
         let particles = [];
         let heartMode = false;
 
-        // تایمر
         function updateTimer() {
             const now = new Date();
             const diff = now - CONFIG.startDate;
@@ -241,7 +226,6 @@
         }
         setInterval(updateTimer, 1000);
 
-        // --- کلاس ستاره ---
         class Star {
             constructor() {
                 this.x = Math.random() * width;
@@ -277,7 +261,6 @@
             }
         }
 
-        // --- کلاس شهاب سنگ (تعمیر شد!) ---
         class ShootingStar {
             constructor() {
                 this.x = Math.random() * width;
@@ -309,7 +292,6 @@
             }
         }
 
-        // محاسبه قلب
         function calculateHeartTargets() {
             const cx = width / 2;
             const cy = height / 2;
@@ -325,7 +307,6 @@
             });
         }
 
-        // --- کلاس آتش‌بازی و ذرات ---
         class Firework {
             constructor() {
                 this.x = Math.random() * width * 0.8 + width * 0.1;
@@ -376,7 +357,6 @@
             }
         }
 
-        // --- نمایش عکس‌ها (اصلاح شده) ---
         function launchMemories() {
             const container = document.body;
             CONFIG.photos.forEach((photoUrl, index) => {
@@ -384,21 +364,16 @@
                     const img = document.createElement('div');
                     img.className = 'memory-photo';
                     
-                    // *** این خط حالا فعال شده برای نمایش عکس ***
                     img.style.backgroundImage = `url('${photoUrl}')`;
                     
-                    // موقعیت رندوم
                     img.style.left = (Math.random() * (width - 200) + 50) + 'px';
                     
                     container.appendChild(img);
                     
-                    // حذف بعد از پایان انیمیشن
                     setTimeout(() => img.remove(), 18000);
-                }, index * 3000); // هر 3 ثانیه یک عکس
-            });
+                }, index * 3000); 
         }
 
-        // کلیک و پیام‌های مخفی
         document.addEventListener('click', (e) => {
             if(e.target.tagName === 'BUTTON') return;
             const msg = document.createElement('div');
@@ -423,8 +398,7 @@
 
             stars.forEach(star => star.update());
 
-            // --- لاجیک شهاب سنگ (تعمیر شد) ---
-            if (Math.random() * 1000 < 5) { 
+            if (Math.random() * 1000 < 15) { 
                 shootingStars.push(new ShootingStar());
             }
             
@@ -485,3 +459,4 @@
 </html>
 
 ```
+
