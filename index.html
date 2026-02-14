@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Night We Met</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300&family=Great+Vibes&display=swap" rel="stylesheet">
+    <title>For Negar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300&family=Great+Vibes&family=Lalezar&display=swap" rel="stylesheet">
     
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #000510; /* سرمه‌ای خیلی تیره */
+            background-color: #000510;
             font-family: 'Montserrat', sans-serif;
             color: white;
+            user-select: none; /* جلوگیری از انتخاب متن */
         }
 
         canvas {
@@ -31,7 +32,6 @@
             transform: translate(-50%, -50%);
             text-align: center;
             z-index: 10;
-            pointer-events: none; /* کلیک از روی متن رد بشه */
             width: 100%;
         }
 
@@ -47,9 +47,9 @@
             animation: fadeIn 3s forwards 1s;
         }
 
-        /* متن The Night We Met */
+        /* متن آهنگ */
         h2 {
-            font-family: 'Great Vibes', cursive; /* فونت دست‌نویس زیبا */
+            font-family: 'Great Vibes', cursive;
             font-size: 2.5rem;
             color: #ffcccc;
             margin-top: 10px;
@@ -67,11 +67,42 @@
             opacity: 0;
             animation: fadeIn 3s forwards 4s;
             text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        /* دکمه ولنتاین */
+        #valentine-btn {
+            font-family: 'Lalezar', cursive; /* فونت فارسی جذاب */
+            font-size: 1.5rem;
+            padding: 12px 40px;
+            background: rgba(255, 20, 100, 0.15);
+            border: 2px solid #ff3366;
+            color: #ffe6ea;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 51, 102, 0.3);
+            transition: all 0.4s ease;
+            opacity: 0;
+            animation: fadeIn 3s forwards 5s; /* دیرتر از همه ظاهر میشه */
+            z-index: 20;
+            pointer-events: auto; /* قابل کلیک باشه */
+            outline: none;
+        }
+
+        #valentine-btn:hover {
+            background: #ff3366;
+            color: white;
+            box-shadow: 0 0 40px #ff3366, 0 0 10px white;
+            transform: scale(1.05);
+        }
+
+        #valentine-btn:active {
+            transform: scale(0.95);
         }
 
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
-        /* دکمه شروع */
+        /* دکمه شروع اولیه */
         #overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 100;
@@ -79,7 +110,7 @@
             transition: opacity 1.5s;
         }
         
-        button {
+        #start-btn {
             padding: 15px 50px;
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -92,7 +123,7 @@
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
         }
         
-        button:hover {
+        #start-btn:hover {
             background: white;
             color: black;
             box-shadow: 0 0 30px white;
@@ -107,35 +138,37 @@
     </div>
 
     <div id="ui-layer">
-        <h1 id="name-display">NAME HERE</h1>
+        <h1 id="name-display">NEGAR</h1>
         <h2>The Night We Met</h2>
         <p>Mashhad • Jan 22, 2024</p>
+        
+        <button id="valentine-btn">ولنتاینت مبارک نگار عزیزم</button>
     </div>
 
     <canvas id="skyCanvas"></canvas>
 
     <audio id="bg-music" loop>
         <source src="music.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
     </audio>
 
     <script>
         // --- تنظیمات ---
         const CONFIG = {
-            partnerName: "ESME OON", // اسم پارتنرت رو اینجا بنویس
-            starCount: 1000,
-            shootingStarFreq: 200 // شانس اومدن شهاب سنگ (کمتر = بیشتر)
+            partnerName: "NEGAR",
+            starCount: 800
         };
-
-        document.getElementById('name-display').innerText = CONFIG.partnerName;
 
         const canvas = document.getElementById('skyCanvas');
         const ctx = canvas.getContext('2d');
         let width, height;
+        
+        // آرایه‌ها
         let stars = [];
         let shootingStars = [];
+        let fireworks = [];
+        let particles = [];
 
-        // --- کلاس ستاره ---
+        // --- کلاس ستاره (پس‌زمینه) ---
         class Star {
             constructor() {
                 this.x = Math.random() * width;
@@ -144,37 +177,22 @@
                 this.baseAlpha = Math.random() * 0.5 + 0.3;
                 this.blinkSpeed = Math.random() * 0.02 + 0.005;
                 this.blinkDir = 1;
-                // رنگ‌های واقعی‌تر (آبی، سفید، نارنجی)
                 const hue = Math.random();
-                if(hue > 0.9) this.color = "200, 220, 255"; // آبی
-                else if(hue > 0.7) this.color = "255, 220, 180"; // نارنجی
-                else this.color = "255, 255, 255"; // سفید
+                if(hue > 0.9) this.color = "200, 220, 255"; 
+                else if(hue > 0.7) this.color = "255, 220, 180"; 
+                else this.color = "255, 255, 255"; 
             }
-
             draw() {
                 ctx.beginPath();
                 ctx.fillStyle = `rgba(${this.color}, ${this.baseAlpha})`;
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
-                
-                // درخشش (Glow)
-                if (Math.random() > 0.95) {
-                    ctx.shadowBlur = 8;
-                    ctx.shadowColor = "white";
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
-                }
             }
-
             update() {
-                // چرخش آرام آسمان
-                this.x -= 0.02;
+                this.x -= 0.05; // چرخش خیلی آرام
                 if (this.x < 0) this.x = width;
-                
-                // چشمک زدن
                 this.baseAlpha += this.blinkSpeed * this.blinkDir;
                 if (this.baseAlpha > 0.8 || this.baseAlpha < 0.2) this.blinkDir *= -1;
-                
                 this.draw();
             }
         }
@@ -188,26 +206,20 @@
                 this.speed = Math.random() * 5 + 10;
                 this.active = true;
             }
-
             update() {
-                this.x -= this.speed; // حرکت به چپ
-                this.y += this.speed * 0.5; // حرکت به پایین
+                this.x -= this.speed;
+                this.y += this.speed * 0.5;
                 this.len += 2;
-                
                 if (this.len > 80) this.len = 80;
                 if (this.x < 0 || this.y > height) this.active = false;
-                
                 this.draw();
             }
-
             draw() {
                 const tailX = this.x + this.len;
                 const tailY = this.y - this.len * 0.5;
-                
                 const gradient = ctx.createLinearGradient(this.x, this.y, tailX, tailY);
                 gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
                 gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
-
                 ctx.beginPath();
                 ctx.strokeStyle = gradient;
                 ctx.lineWidth = 1.5;
@@ -217,46 +229,110 @@
             }
         }
 
+        // --- کلاس موشک (Firework Rocket) ---
+        class Firework {
+            constructor(tx, ty) {
+                this.x = width / 2 + (Math.random() - 0.5) * 200; // شلیک از وسط پایین
+                this.y = height;
+                this.tx = tx; // مقصد
+                this.ty = ty;
+                this.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                this.speed = 8;
+                this.angle = Math.atan2(ty - this.y, tx - this.x);
+                this.vx = Math.cos(this.angle) * this.speed;
+                this.vy = Math.sin(this.angle) * this.speed;
+                this.active = true;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // بررسی رسیدن به مقصد
+                const dist = Math.hypot(this.x - this.tx, this.y - this.ty);
+                if (dist < 10 || this.y < this.ty) {
+                    this.explode();
+                    this.active = false;
+                }
+                this.draw();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.fillStyle = this.color;
+                ctx.arc(this.x, this.y, 3, 0, Math.PI*2);
+                ctx.fill();
+            }
+            explode() {
+                // تولید ذرات انفجار
+                for(let i=0; i<40; i++) {
+                    particles.push(new Particle(this.x, this.y, this.color));
+                }
+            }
+        }
+
+        // --- کلاس ذرات انفجار (Particles) ---
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 4 + 1;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.015 + 0.005;
+                this.gravity = 0.05;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity; // اثر جاذبه
+                this.alpha -= this.decay;
+                this.draw();
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.fillStyle = this.color;
+                ctx.arc(this.x, this.y, 2, 0, Math.PI*2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
         // --- توابع اصلی ---
         function init() {
             resize();
-            // ساخت ستاره‌ها
             for(let i=0; i<CONFIG.starCount; i++) stars.push(new Star());
-            
-            // اضافه کردن جبار (Orion) به صورت دستی برای شباهت به آسمان زمستان
-            createOrionConstellation();
-            
             animate();
         }
 
-        function createOrionConstellation() {
-            // ستاره‌های ثابت جبار
-            const cx = width/2; 
-            const cy = height/2;
-            const orionStars = [
-                {x: 0, y: 0, s: 2.5}, {x: 20, y: 5, s: 2.5}, {x: 40, y: 10, s: 2.5}, // کمربند
-                {x: -20, y: -40, s: 3.5, c: "255, 100, 100"}, // Betelgeuse (قرمز)
-                {x: 60, y: 60, s: 3.5, c: "100, 150, 255"}, // Rigel (آبی)
-            ];
-            // این‌ها رو اضافه نمیکنیم به لیست متحرک تا ثابت بمونن (یا با سرعت کم بچرخن)
-            // فعلا برای سادگی با بقیه میچرخن
-        }
-
         function animate() {
-            // پاک کردن صفحه با ردپای بسیار کم برای نرمی
-            ctx.fillStyle = "rgba(0, 5, 16, 0.3)";
+            // پاک کردن صفحه با حالت Trail (دنباله دار)
+            ctx.fillStyle = "rgba(0, 5, 16, 0.2)"; // شفافیت برای ردپا
             ctx.fillRect(0, 0, width, height);
 
             stars.forEach(star => star.update());
 
-            // مدیریت شهاب سنگ‌ها
-            if (Math.random() * 1000 < 5) { // شانس ساخت شهاب سنگ
-                shootingStars.push(new ShootingStar());
-            }
+            // شهاب سنگ رندوم
+            if (Math.random() < 0.005) shootingStars.push(new ShootingStar());
             
-            shootingStars.forEach((ss, index) => {
+            shootingStars.forEach((ss, i) => {
                 ss.update();
-                if (!ss.active) shootingStars.splice(index, 1);
+                if (!ss.active) shootingStars.splice(i, 1);
+            });
+
+            // مدیریت آتش بازی
+            fireworks.forEach((fw, i) => {
+                fw.update();
+                if(!fw.active) fireworks.splice(i, 1);
+            });
+
+            // مدیریت ذرات
+            particles.forEach((p, i) => {
+                p.update();
+                if(p.alpha <= 0) particles.splice(i, 1);
             });
 
             requestAnimationFrame(animate);
@@ -268,29 +344,41 @@
             canvas.width = width;
             canvas.height = height;
         }
-
         window.addEventListener('resize', resize);
 
-        // --- کنترل دکمه و موزیک ---
+        // --- رویداد دکمه‌ها ---
+        
+        // 1. شروع موزیک
         const startBtn = document.getElementById('start-btn');
         const overlay = document.getElementById('overlay');
         const audio = document.getElementById('bg-music');
 
         startBtn.addEventListener('click', () => {
-            // پخش موزیک
-            audio.play().then(() => {
-                console.log("Music started");
-            }).catch(error => {
-                console.log("Music play failed:", error);
-                alert("لطفا فایل music.mp3 را چک کنید");
-            });
-
-            // محو کردن صفحه شروع
+            audio.play().catch(e => alert("لطفا فایل music.mp3 را چک کنید"));
             overlay.style.opacity = 0;
             setTimeout(() => {
                 overlay.style.display = 'none';
-                init(); // شروع انیمیشن
+                init();
             }, 1500);
+        });
+
+        // 2. دکمه ولنتاین (آتیش بازی)
+        const valBtn = document.getElementById('valentine-btn');
+        
+        valBtn.addEventListener('click', () => {
+            // شلیک 10 تا موشک با فاصله زمانی کم
+            for(let i=0; i<15; i++) {
+                setTimeout(() => {
+                    const tx = Math.random() * width * 0.8 + width * 0.1; // موقعیت رندوم افقی
+                    const ty = Math.random() * height * 0.5 + height * 0.1; // ارتفاع رندوم
+                    fireworks.push(new Firework(tx, ty));
+                }, i * 300); // هر 300 میلی ثانیه یکی
+            }
+            
+            // تغییر متن دکمه برای بامزگی (اختیاری)
+            valBtn.innerText = "عاشقتم ❤️";
+            valBtn.style.background = "#ff3366";
+            valBtn.style.color = "white";
         });
 
     </script>
